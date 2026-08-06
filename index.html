@@ -523,7 +523,8 @@
     <!-- === LA MAGIA ESTÁ AQUÍ === -->
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <script>
-        const socket = io();
+        const socket = io("https://dominion-server-3dhx.onrender.com");
+
 
         // Escuchamos a Termux: Nos manda la lista y nosotros pintamos la sala
         socket.on('actualizar_sala', (jugadores) => {
