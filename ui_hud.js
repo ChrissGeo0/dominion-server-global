@@ -312,3 +312,71 @@ UI.toggleStatsView = function(viewId) {
         totalsModal.style.display = 'none';
     }
 };
+
+// ==================================================
+// SISTEMA DE GUÍA DE HÉROES (In-Game)
+// ==================================================
+UI.toggleGuide = function() {
+    let guide = document.getElementById('in-game-guide');
+    if (!guide) {
+        guide = document.createElement('div');
+        guide.id = 'in-game-guide';
+        guide.style.cssText = 'display: flex; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); justify-content: center; align-items: center; pointer-events: auto; flex-direction: column; opacity: 0; transition: opacity 0.3s;';
+        
+        let content = `
+        <div style="background: rgba(10, 15, 25, 0.95); border: 1px solid #facc15; border-radius: 12px; width: 90%; max-width: 500px; max-height: 85%; padding: 20px; overflow-y: auto; box-shadow: 0 0 20px rgba(250, 204, 21, 0.3); font-family: 'Segoe UI', sans-serif;">
+            <h2 style="color: #facc15; text-align: center; margin-top: 0; margin-bottom: 5px; text-shadow: 0 0 10px rgba(250, 204, 21, 0.5); font-size: 18px; letter-spacing: 1px; text-transform: uppercase;">Guía de Héroes</h2>
+            <p style="text-align: center; font-size: 11px; color: #aaa; margin-bottom: 15px;">Conoce las fortalezas de aliados y enemigos.</p>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+        `;
+        
+        if (window.heroInfo) {
+            for (let key in window.heroInfo) {
+                let info = window.heroInfo[key];
+                content += `
+                    <div style="background: rgba(0,0,0,0.6); border-left: 3px solid #38bdf8; padding: 10px; border-radius: 6px;">
+                        <h4 style="margin: 0 0 5px 0; color: #38bdf8; font-size: 13px; text-shadow: 0 0 5px rgba(56, 189, 248, 0.5);">${info.nombre}</h4>
+                        <p style="margin: 0; font-size: 11px; color: #ddd; line-height: 1.4;">${info.desc}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        content += `
+            </div>
+            <button id="close-guide-btn" style="width: 100%; margin-top: 20px; padding: 12px; background: rgba(0,0,0,0.8); border: 1px solid #facc15; color: #facc15; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s;">ENTENDIDO</button>
+        </div>`;
+        
+        guide.innerHTML = content;
+        document.body.appendChild(guide);
+        
+        setTimeout(() => guide.style.opacity = '1', 10);
+        
+        guide.addEventListener('pointerdown', (e) => {
+            if (e.target === guide || e.target.id === 'close-guide-btn') {
+                guide.style.opacity = '0';
+                setTimeout(() => guide.style.display = 'none', 300);
+            }
+        });
+    } else {
+        if (guide.style.display === 'none') {
+            guide.style.display = 'flex';
+            setTimeout(() => guide.style.opacity = '1', 10);
+        } else {
+            guide.style.opacity = '0';
+            setTimeout(() => guide.style.display = 'none', 300);
+        }
+    }
+};
+
+window.addEventListener('load', () => {
+    let settingsBtn = document.getElementById('settings-btn');
+    if (settingsBtn) {
+        let guideBtn = document.createElement('div');
+        guideBtn.id = 'guide-btn';
+        guideBtn.className = 'hud-element';
+        guideBtn.innerHTML = '📖';
+        guideBtn.onclick = () => UI.toggleGuide();
+        settingsBtn.parentNode.insertBefore(guideBtn, settingsBtn.nextSibling);
+    }
+});
