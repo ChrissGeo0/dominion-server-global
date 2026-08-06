@@ -4,29 +4,27 @@ const http = require('http').createServer(app);
 const path = require('path');
 const io = require('socket.io')(http, { cors: { origin: "*" } });
 
-const PORT = 3000;
-app.use(express.static(path.join(__dirname, '../dominion of beta 5')));
+// 1. Render nos da el puerto automáticamente
+const PORT = process.env.PORT || 3000;
 
-// La libreta de Termux: Aquí anotaremos quién está y en qué equipo
+// 2. Le decimos que los archivos del juego están en esta misma carpeta
+app.use(express.static(__dirname)); 
+
 let jugadoresEnSala = {};
 
 io.on('connection', (socket) => {
-    // Si eres el primero, te llamas "CERO (Host)", si no, "Jugador X"
     let numJugadores = Object.keys(jugadoresEnSala).length;
     let nombreJugador = numJugadores === 0 ? "CERO (Host)" : "Jugador " + (numJugadores + 1);
     
-    // Anotamos al jugador en el equipo AZUL (1) por defecto
     jugadoresEnSala[socket.id] = { nombre: nombreJugador, equipo: 1 };
     console.log(`🟢 ${nombreJugador} entró a la sala.`);
     
-    // Le mandamos la libreta actualizada a todos los celulares
     io.emit('actualizar_sala', jugadoresEnSala);
 
-    // Cuando alguien toca "UNIRSE AL AZUL" o "ROJO", actualizamos y avisamos
     socket.on('cambiar_equipo', (nuevoEquipo) => {
         if(jugadoresEnSala[socket.id]) {
             jugadoresEnSala[socket.id].equipo = nuevoEquipo;
-            io.emit('actualizar_sala', jugadoresEnSala); // Grito a todos: ¡Alguien cambió de bando!
+            io.emit('actualizar_sala', jugadoresEnSala);
         }
     });
 
@@ -38,11 +36,10 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         console.log(`🔴 ${jugadoresEnSala[socket.id]?.nombre} abandonó la sala.`);
         delete jugadoresEnSala[socket.id];
-        io.emit('actualizar_sala', jugadoresEnSala); // Grito a todos: ¡Alguien se fue!
+        io.emit('actualizar_sala', jugadoresEnSala);
     });
 });
 
 http.listen(PORT, () => {
-    console.log(`🚀 Servidor Dominion activo y escuchando en el puerto ${PORT}`);
-    console.log(`Sala de espera abierta...`);
+    console.log(`🚀 Servidor Dominion activo en puerto ${PORT}`);
 });
