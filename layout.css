@@ -97,8 +97,8 @@ input[type=range] { width: 100%; margin-top: 10px; }
 .floating-dmg.animating { display: block; } 
 #cancel-zone { position: absolute; top: 15%; right: 15%; width: 70px; height: 70px; display: none; align-items: center; justify-content: center; z-index: 50; pointer-events: none; } 
 #cancel-zone.active { transform: scale(1.2); } 
-#tutorial-radio { position: absolute; top: 100px; left: 50%; transform: translateX(-50%); width: 85%; max-width: 500px; display: flex; align-items: center; padding: 15px; z-index: 150; pointer-events: none; }
-#radio-avatar { width: 60px; height: 60px; margin-right: 15px; display: flex; justify-content: center; align-items: center; flex-shrink: 0; }
+#tutorial-radio { position: absolute; top: 18%; left: 50%; transform: translateX(-50%); width: 75%; max-width: 500px; display: flex; align-items: center; padding: 8px 15px; z-index: 150; pointer-events: none; }
+#radio-avatar { margin-right: 12px; display: flex; justify-content: center; align-items: center; flex-shrink: 0; }
 #radio-text { flex-grow: 1; }
 .hud-element { display: none; } 
 .stick-container { position: absolute; z-index: 10; pointer-events: auto; touch-action: none; transform-origin: center; } 
