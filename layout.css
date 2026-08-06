@@ -1,0 +1,197 @@
+/* ================================================== */
+/* layout.css - ESTRUCTURA, POSICIONES Y COORDENADAS */
+/* ================================================== */
+
+/* === ESTILOS BASE Y JUEGO === */ 
+body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; touch-action: none; display: block; } 
+#gameCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; display: block; } 
+
+/* === SPLASH SCREEN / INTRO === */
+#splash-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000; display: flex; justify-content: center; align-items: center; text-align: center; }
+#splash-main { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+#splash-bg { width: 100%; height: 100%; object-fit: contain; }
+.splash-loader-content { position: absolute; bottom: 15%; left: 50%; transform: translateX(-50%); width: 100%; }
+
+/* === EL CLIENTE MAGICO (FONDO) === */
+#classic-client { position: absolute; z-index: 30; width: 100%; height: 100%; }
+
+/* === LAS COORDENADAS EXACTAS DEL ROMPECABEZAS (LOBBY) === */
+#caja-1 { position: absolute; top: 13%; left: 8%; width: 15.7%; height: 2.8%; }
+#caja-2 { position: absolute; top: 13.1%; left: 25.1%; width: 15.6%; height: 2.6%; }
+#caja-3 { position: absolute; top: 12.9%; left: 42.4%; width: 15.4%; height: 2.8%; }
+#caja-4 { position: absolute; top: 12.9%; left: 59.5%; width: 15.6%; height: 2.9%; }
+#caja-5 { position: absolute; top: 12.9%; left: 76.8%; width: 15.2%; height: 2.8%; }
+#caja-6 { position: absolute; top: 1.4%; left: 71.5%; width: 10.9%; height: 2.2%; }
+#caja-7 { position: absolute; top: 1.4%; left: 87.4%; width: 10.2%; height: 2.2%; }
+#caja-10 { position: absolute; top: 1.1%; left: 3.6%; width: 11.5%; height: 6.8%; }
+#caja-11 { position: absolute; top: 70.1%; left: 12.5%; width: 6.5%; height: 3.5%; }
+#caja-12 { position: absolute; top: 74.6%; left: 12.2%; width: 6.9%; height: 3.5%; }
+#caja-13 { position: absolute; top: 79.2%; left: 12.2%; width: 7%; height: 3.4%; }
+#caja-17 { position: absolute; top: 70.5%; left: 72.7%; width: 14.3%; height: 2.8%; }
+#caja-18 { position: absolute; top: 75%; left: 72.6%; width: 14.4%; height: 3%; }
+#caja-19 { position: absolute; top: 79.3%; left: 72.3%; width: 14.8%; height: 3%; }
+#caja-20 { position: absolute; top: 92.3%; left: 8.2%; width: 10.7%; height: 5.7%; }
+#caja-21 { position: absolute; top: 92.6%; left: 28%; width: 8.3%; height: 4.8%; }
+#caja-22 { position: absolute; top: 92.6%; left: 41.9%; width: 7.9%; height: 4.8%; }
+#caja-23 { position: absolute; top: 92.5%; left: 56.2%; width: 8.6%; height: 4.9%; }
+#caja-24 { position: absolute; top: 92.4%; left: 70.3%; width: 8.4%; height: 4.9%; }
+#caja-25 { position: absolute; top: 92.4%; left: 84.7%; width: 8.2%; height: 5%; }
+#caja-26 { position: absolute; top: 4.6%; left: 16.4%; width: 23.7%; height: 5.3%; }
+#caja-27 { position: absolute; top: 4.5%; left: 61.5%; width: 33%; height: 5.7%; }
+#caja-28 { position: absolute; top: 69.9%; left: 20%; width: 22.1%; height: 3.7%; }
+#caja-29 { position: absolute; top: 69.9%; left: 42.9%; width: 29.2%; height: 3.7%; }
+#caja-30 { position: absolute; top: 74.5%; left: 20%; width: 22.2%; height: 3.5%; }
+#caja-31 { position: absolute; top: 79%; left: 20%; width: 22.2%; height: 3.7%; }
+#caja-32 { position: absolute; top: 74.4%; left: 42.9%; width: 29.3%; height: 3.7%; }
+#caja-33 { position: absolute; top: 78.9%; left: 42.7%; width: 29%; height: 3.7%; }
+
+#caja-8  { position: absolute; top: 17.9%; left: 14.1%; width: 73%; height: 15%; display: flex; align-items: center; justify-content: center;}
+#caja-9  { position: absolute; top: 35.4%; left: 12%; width: 77.5%; height: 26.1%; display: flex; align-items: center; justify-content: center; }
+
+#caja-34 { position: absolute; top: 17.9%; left: 10.6%; width: 79.6%; height: 7%; }
+#caja-35 { position: absolute; top: 25.4%; left: 10.6%; width: 79.5%; height: 8.3%; }
+#caja-36 { position: absolute; top: 34.2%; left: 1.8%; width: 47.2%; height: 16.8%; }
+#caja-37 { position: absolute; top: 34.1%; left: 50.8%; width: 47.2%; height: 16.9%; }
+#caja-38 { position: absolute; top: 52.1%; left: 2.4%; width: 35.1%; height: 12.2%; }
+#caja-39 { position: absolute; top: 52.1%; left: 63.2%; width: 34.6%; height: 12.4%; }
+#caja-40 { position: absolute; top: 52%; left: 37.9%; width: 24.7%; height: 12.6%; }
+
+/* Estructura Interna del Lobby */
+.magic-tab { width: 100%; height: 100%; padding: 0; text-align: center; }
+.currency-box { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; white-space: nowrap; }
+.tab-top-content, .tab-lower-content { width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+.title-glow { text-align: center; margin: 0; }
+.role-btn { padding: 8px; text-align: center; }
+.team-btn { flex: 1; }
+.char-btn { flex: 1; min-width: 30%; }
+.avatar-circle { width: 100%; height: 100%; box-sizing: border-box; }
+.social-text-box { width: 100%; height: 100%; display: flex; align-items: center; justify-content: flex-start; }
+.social-btn { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
+
+/* === PANTALLA DE CARGA Y SIMULACIÓN === */ 
+#loading-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; display: flex; justify-content: center; align-items: center; }
+#loading-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; object-position: center; z-index: 1001; }
+#clean-loader { position: absolute; z-index: 1002; width: 50%; max-width: 400px; top: 76%; left: 50%; transform: translate(-50%, -50%); }
+.progress-bar-bg { width: 100%; height: 12px; overflow: hidden; }
+.progress-bar-fill { height: 100%; width: 0%; }
+#simulation-screen { display: none; position: absolute; z-index: 100; width: 100%; height: 100%; padding: 20px; box-sizing: border-box; flex-direction: column; } 
+#sim-console { flex-grow: 1; overflow-y: auto; margin-top: 15px; padding-bottom: 220px; word-wrap: break-word; } 
+#sim-stop-btn { padding: 12px 20px; } 
+#sim-minimap-wrapper { position: absolute; bottom: 20px; right: 20px; width: 200px; height: 200px; } 
+#simMinimapCanvas { width: 100%; height: 100%; } 
+
+/* === HUD Y CONTROLES === */ 
+#top-hud { position: absolute; top: 15px; left: 50%; transform: translateX(-50%); display: none; flex-direction: column; align-items: center; z-index: 20; pointer-events: auto; touch-action: none; } 
+.hud-row { display: flex; gap: 15px; align-items: center; justify-content: center; } 
+.nexus-hud { padding: 5px 12px; pointer-events: auto; } 
+#match-timer { padding: 5px 20px; pointer-events: auto; } 
+#settings-btn { position: absolute; right: 15px; top: 15px; z-index: 40; width: 32px; height: 32px; display: none; justify-content: center; align-items: center; pointer-events: auto; touch-action: none; }
+#settings-menu { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 25px; z-index: 100; display: none; flex-direction: column; text-align: center; min-width: 280px; } 
+#settings-menu h2 { margin-top: 0; margin-bottom: 20px; } 
+input[type=range] { width: 100%; margin-top: 10px; } 
+.settings-btn-main { margin-top: 12px; padding: 12px; width: 100%; } 
+.settings-btn-close { margin-top: 15px; padding: 12px; width: 100%; } 
+#hud-save-overlay { position: absolute; top: 15px; left: 50%; transform: translateX(-50%); z-index: 100; display: none; flex-direction: column; align-items: center; gap: 5px; padding: 20px; text-align: center; min-width: 250px; } 
+#scale-control { margin-top: 10px; width: 100%; display: none; text-align: left; } 
+.floating-dmg { position: absolute; pointer-events: none; z-index: 50; transform: translate(-50%, -50%); display: none; } 
+.floating-dmg.animating { display: block; } 
+#cancel-zone { position: absolute; top: 15%; right: 15%; width: 70px; height: 70px; display: none; align-items: center; justify-content: center; z-index: 50; pointer-events: none; } 
+#cancel-zone.active { transform: scale(1.2); } 
+#tutorial-radio { position: absolute; top: 100px; left: 50%; transform: translateX(-50%); width: 85%; max-width: 500px; display: flex; align-items: center; padding: 15px; z-index: 150; pointer-events: none; }
+#radio-avatar { width: 60px; height: 60px; margin-right: 15px; display: flex; justify-content: center; align-items: center; flex-shrink: 0; }
+#radio-text { flex-grow: 1; }
+.hud-element { display: none; } 
+.stick-container { position: absolute; z-index: 10; pointer-events: auto; touch-action: none; transform-origin: center; } 
+.stick-knob { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; display: flex; justify-content: center; align-items: center; } 
+.move-stick { bottom: 12%; left: 8%; width: 140px; height: 140px; } 
+.move-stick .stick-knob { width: 55px; height: 55px; } 
+.atk-stick { bottom: 12%; right: 8%; width: 130px; height: 130px; } 
+.atk-stick .stick-knob { width: 50px; height: 50px; } 
+.skill-stick { bottom: 35%; right: 20%; width: 85px; height: 85px; } 
+.skill-stick .stick-knob { width: 40px; height: 40px; } 
+.skill-stick-2 { bottom: 50%; right: 12%; width: 75px; height: 75px; } 
+.skill-stick-2 .stick-knob { width: 35px; height: 35px; } 
+#recall-btn { bottom: 8%; left: 50%; transform: translateX(-50%); width: 60px; height: 60px; } 
+#recall-btn .stick-knob { width: 40px; height: 40px; } 
+#minimap-container { position: absolute; top: 80px; left: 15px; width: 100px; height: 100px; z-index: 20; pointer-events: auto; touch-action: none; transform-origin: top left; } 
+#minimapCanvas { width: 100%; height: 100%; pointer-events: none; } 
+
+
+/* ========================================================= */
+/* === NUEVA PANTALLA DE RESULTADOS (GAME OVER Y TOTALES) === */
+/* ========================================================= */
+
+#game-over-screen { position: absolute; top: 0; left: 0; z-index: 200; width: 100%; height: 100%; display: none; touch-action: auto; background: #000; overflow: hidden; }
+#stats-main-view { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; }
+#results-bg-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: fill; z-index: 1; pointer-events: none; }
+
+.res-box { position: absolute; z-index: 10; display: flex; justify-content: center; align-items: center; text-align: center; }
+
+/* COORDENADAS DEL ROMPECABEZAS RESULTADOS */
+#res-1 { position: absolute; top: 7.6%; left: 39.6%; width: 9.9%; height: 3.9%; }
+#res-2 { position: absolute; top: 7.6%; left: 70.5%; width: 10.2%; height: 3.9%; }
+#res-3 { position: absolute; top: 11.5%; left: 61.9%; width: 11.8%; height: 2.1%; }
+#res-4 { position: absolute; top: 24.7%; left: 4.1%; width: 9%; height: 6.3%; }
+#res-5 { position: absolute; top: 24.5%; left: 16.4%; width: 12.9%; height: 6%; }
+#res-6 { position: absolute; top: 24.4%; left: 31.4%; width: 13%; height: 5.9%; }
+#res-7 { position: absolute; top: 24.4%; left: 47.3%; width: 13.4%; height: 6%; }
+#res-8 { position: absolute; top: 24.4%; left: 66.2%; width: 13.4%; height: 6%; }
+#res-9 { position: absolute; top: 24.4%; left: 83%; width: 13.1%; height: 6%; }
+#res-10 { position: absolute; top: 31.6%; left: 3.9%; width: 9.2%; height: 6.4%; }
+#res-11 { position: absolute; top: 31.8%; left: 16.4%; width: 12.9%; height: 6.3%; }
+#res-12 { position: absolute; top: 31.8%; left: 31.5%; width: 12.9%; height: 6.4%; }
+#res-13 { position: absolute; top: 31.7%; left: 47.9%; width: 12.8%; height: 6.5%; }
+#res-14 { position: absolute; top: 31.6%; left: 66.6%; width: 12.9%; height: 6.7%; }
+#res-15 { position: absolute; top: 31.5%; left: 83.1%; width: 13.1%; height: 6.6%; }
+#res-16 { position: absolute; top: 38.8%; left: 3.7%; width: 9.6%; height: 6.4%; }
+#res-17 { position: absolute; top: 38.8%; left: 16.5%; width: 12.8%; height: 6.3%; }
+#res-18 { position: absolute; top: 38.8%; left: 31.6%; width: 12.8%; height: 6.4%; }
+#res-19 { position: absolute; top: 38.8%; left: 47.8%; width: 12.8%; height: 6.5%; }
+#res-20 { position: absolute; top: 38.8%; left: 66.6%; width: 13%; height: 6.4%; }
+#res-21 { position: absolute; top: 38.8%; left: 83.1%; width: 13.1%; height: 6.5%; }
+#res-22 { position: absolute; top: 56.7%; left: 3.8%; width: 9.2%; height: 6.6%; }
+#res-23 { position: absolute; top: 56.7%; left: 15.7%; width: 12.5%; height: 6.5%; }
+#res-24 { position: absolute; top: 56.7%; left: 30.6%; width: 12.5%; height: 6.6%; }
+#res-25 { position: absolute; top: 56.8%; left: 47.1%; width: 12.5%; height: 6.6%; }
+#res-26 { position: absolute; top: 56.7%; left: 66%; width: 12.7%; height: 6.6%; }
+#res-27 { position: absolute; top: 56.6%; left: 83.1%; width: 12.6%; height: 6.7%; }
+#res-28 { position: absolute; top: 63.8%; left: 3.8%; width: 9.2%; height: 6.6%; }
+#res-29 { position: absolute; top: 63.7%; left: 15.7%; width: 12.5%; height: 6.6%; }
+#res-30 { position: absolute; top: 63.9%; left: 30.6%; width: 12.5%; height: 6.6%; }
+#res-31 { position: absolute; top: 63.8%; left: 47.1%; width: 12.5%; height: 6.7%; }
+#res-32 { position: absolute; top: 63.6%; left: 66.1%; width: 12.5%; height: 6.7%; }
+#res-33 { position: absolute; top: 63.6%; left: 83%; width: 12.7%; height: 6.7%; }
+#res-34 { position: absolute; top: 71.7%; left: 3.8%; width: 9.2%; height: 6.7%; }
+#res-35 { position: absolute; top: 71.7%; left: 15.7%; width: 12.5%; height: 6.8%; }
+#res-36 { position: absolute; top: 71.7%; left: 30.3%; width: 12.8%; height: 6.8%; }
+#res-37 { position: absolute; top: 71.7%; left: 47%; width: 12.6%; height: 6.8%; }
+#res-38 { position: absolute; top: 71.7%; left: 66.1%; width: 12.5%; height: 6.8%; }
+#res-39 { position: absolute; top: 71.7%; left: 83.1%; width: 12.6%; height: 6.7%; }
+#res-40 { position: absolute; top: 80.4%; left: 10.4%; width: 15.3%; height: 9.9%; }
+#res-41 { position: absolute; top: 87.7%; left: 32.3%; width: 10.6%; height: 4.9%; }
+#res-42 { position: absolute; top: 87.7%; left: 43.6%; width: 10.7%; height: 4.9%; }
+#res-43 { position: absolute; top: 87.7%; left: 55%; width: 11.6%; height: 4.9%; }
+#res-44 { position: absolute; top: 87.8%; left: 69.9%; width: 11.5%; height: 4.9%; }
+#res-45 { position: absolute; top: 87.9%; left: 83.1%; width: 11.8%; height: 4.9%; }
+
+/* CAJAS DE TÍTULO Y BOTONES */
+#stats-title { 
+    position: absolute; top: 0.5%; left: 20%; width: 65.6%; height: 6.2%; 
+    z-index: 5; display: flex; align-items: center; justify-content: center; margin: 0; 
+    white-space: nowrap; /* Evita que el texto baje a otra línea */
+    font-size: clamp(1.2rem, 5.5vw, 2.2rem) !important; /* Achica el texto en pantallas pequeñas */
+}
+#btn-continuar { 
+    position: absolute; top: 94.9%; left: 17.2%; width: 30.9%; height: 5.2%; 
+    z-index: 20; 
+    padding: 0 !important; min-width: 0 !important; box-sizing: border-box; /* Ajuste estricto a la caja */
+}
+#btn-totales { 
+    position: absolute; top: 94.9%; left: 51.4%; width: 30.7%; height: 5.3%; 
+    z-index: 20; 
+    padding: 0 !important; min-width: 0 !important; box-sizing: border-box; /* Ajuste estricto a la caja */
+}
+
+/* MODAL DE TOTALES FLOTANTE */
+#stats-totals-modal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 100; display: flex; justify-content: center; align-items: center; background: rgba(0,0,0,0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.modal-content-glass { width: 90%; max-width: 450px; background: rgba(10, 15, 25, 0.7); border: 2px solid rgba(51, 204, 255, 0.5); border-radius: 15px; box-shadow: 0 0 30px rgba(0,0,0,0.8), inset 0 0 20px rgba(51, 204, 255, 0.2); padding: 20px; max-height: 90%; overflow-y: auto; }

@@ -1,0 +1,748 @@
+<!DOCTYPE html> 
+<html lang="es"> 
+<head>     
+    <meta charset="UTF-8">     
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">     
+    <title>Dominion 3D: Night Arena</title>     
+    <link rel="stylesheet" href="layout.css"> 
+    <link rel="stylesheet" href="theme.css"> 
+</head> 
+<body>     
+    
+    <div id="splash-screen">
+        <div id="splash-credits">
+            <h2>G-STUDIOS</h2>
+            <h1>Ella no te ama 🤣</h1>
+            <p>PRESENTA</p>
+        </div>
+        <div id="splash-main" style="display: none;">
+            <img src="Intro.png" alt="Dominion 3D" id="splash-bg">
+            <div class="splash-loader-content">
+                <h2 id="splash-loading-title" style="line-height: 1.4;">
+                    ¡¡BIENVENIDO A DOMINION!!<br>
+                    <small style="font-size: 0.85rem; color: #ffeb3b; text-shadow: 0 0 10px #ffea00;"> La gloria eterna exige sangre, tres mentes, un destino, cero errores🔥</small>
+                </h2>
+                <div class="progress-bar-bg" id="loading-bar-container" style="width: 250px; margin: 0 auto;">
+                    <div class="progress-bar-fill" id="splash-loading-bar"></div>
+                </div>
+                <div id="touch-to-start" style="display: none; margin-top: 15px; cursor: pointer;">
+                    <h3 class="pulse-text-start">TOCA LA PANTALLA PARA INICIAR SESIÓN</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>     
+    
+    <div id="classic-client" style="display: none;">
+
+        <div id="caja-1"><button id="btn-nav-jugar" class="magic-tab active-glow" onclick="Cliente.abrirPestana('jugar')">JUGAR</button></div>
+        <div id="caja-2"><button id="btn-nav-inicio" class="magic-tab" onclick="Cliente.abrirPestana('inicio')">INICIO</button></div>
+        <div id="caja-3"><button id="btn-nav-perfil" class="magic-tab" onclick="Cliente.abrirPestana('perfil')">PERFIL</button></div>
+        <div id="caja-4"><button id="btn-nav-tienda" class="magic-tab" onclick="Cliente.abrirPestana('tienda')">TIENDA</button></div>
+        <div id="caja-5"><button id="btn-nav-ajustes" class="magic-tab" onclick="UI.toggleSettings()">AJUSTES</button></div>
+
+        <div id="caja-6" class="currency-box"><span style="color: #33ccff; text-shadow: 0 0 5px #00aaff;">1,250</span></div>
+        <div id="caja-7" class="currency-box"><span style="color: #ff3333; text-shadow: 0 0 5px #ff0000;">450</span></div>
+
+        <div id="caja-8">
+            <div id="tab-inicio-top" class="tab-top-content" style="display: none;"><h2 class="title-glow">CRÓNICAS DE HADES</h2></div>
+            
+            <div id="tab-perfil-top" class="tab-top-content" style="display: none; justify-content: flex-start; padding-top: 3px;">
+                <h2 class="title-glow" style="margin-bottom: 6px; font-size: 1.05rem;">HOJA DE SERVICIO</h2>
+                
+                <div class="player-id-card">
+                    <div class="pic-left">
+                        <div class="pic-avatar">🥷</div>
+                        <div class="pic-level">Nvl. 42</div>
+                    </div>
+                    <div class="pic-center">
+                        <div class="pic-name">CERO <span class="pic-id">#7734</span></div>
+                        <div class="pic-title">🔥 Campeón del Abismo</div>
+                        <div class="pic-exp-container">
+                            <div class="pic-exp-bar" style="width: 75%;"></div>
+                        </div>
+                        <div class="pic-exp-text">7,500 / 10,000 EXP</div>
+                    </div>
+                    <div class="pic-right">
+                        <div class="pic-rank-icon">🔮</div>
+                        <div class="pic-rank-name">HADES</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-tienda-top" class="tab-top-content" style="display: none;"><h2 class="title-glow">MERCADO NEGRO</h2></div>
+        </div>
+
+        <div id="caja-9">
+            <div id="tab-inicio-lower" class="tab-lower-content" style="display: none;">
+                <p style="color: #ccc; font-size: 14px; text-shadow: 0 2px 4px #000; line-height: 1.5; text-align: center; font-weight: bold;">
+                    Los antiguos guerreros han despertado.<br><br>
+                    Protege los nexos y domina la arena maldita extrayendo la energía vital desde las profundidades del núcleo.
+                </p>
+            </div>
+            
+            <div id="tab-perfil-lower" class="tab-lower-content" style="display: none; text-align: center; width: 100%;">
+                
+                <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 0; margin-top: 0px; width: 100%;">
+                    <div style="width: 33%;"><span id="perfil-bajas" style="font-size: 18px; color: #fff; font-weight: bold; text-shadow: 0 2px 5px #000;">0</span><br><span style="color: #e0d0b0; font-size: 9px; font-weight: bold; letter-spacing: 1px;">BAJAS</span></div>
+                    <div style="width: 33%;"><span id="perfil-muertes" style="font-size: 18px; color: #ff3333; font-weight: bold; text-shadow: 0 0 5px #ff3333, 0 2px 5px #000;">0</span><br><span style="color: #e0d0b0; font-size: 9px; font-weight: bold; letter-spacing: 1px;">MUERTES</span></div>
+                    <div style="width: 33%;"><span id="perfil-torretas" style="font-size: 18px; color: #33ccff; font-weight: bold; text-shadow: 0 0 5px #33ccff, 0 2px 5px #000;">0</span><br><span style="color: #e0d0b0; font-size: 9px; font-weight: bold; letter-spacing: 1px;">TORRETAS</span></div>
+                    
+                    <div style="width: 33%;"><span id="perfil-jugadas" style="font-size: 18px; color: #fff; font-weight: bold; text-shadow: 0 2px 5px #000;">0</span><br><span style="color: #e0d0b0; font-size: 9px; font-weight: bold; letter-spacing: 1px;">JUGADAS</span></div>
+                    <div style="width: 33%;"><span id="perfil-victorias" style="font-size: 18px; color: #00ffaa; font-weight: bold; text-shadow: 0 0 5px #00ffaa, 0 2px 5px #000;">0</span><br><span style="color: #e0d0b0; font-size: 9px; font-weight: bold; letter-spacing: 1px;">VICTORIAS</span></div>
+                    <div style="width: 33%;"><span id="perfil-winrate" style="font-size: 18px; color: #ffeb3b; font-weight: bold; text-shadow: 0 0 5px #ffeb3b, 0 2px 5px #000;">0%</span><br><span style="color: #e0d0b0; font-size: 9px; font-weight: bold; letter-spacing: 1px;">WIN RATE</span></div>
+                    
+                    <div style="width: 33%;"><span id="perfil-dmg-causado" style="font-size: 16px; color: #33ccff; font-weight: bold; text-shadow: 0 0 5px #33ccff, 0 2px 5px #000;">0</span><br><span style="color: #e0d0b0; font-size: 8px; font-weight: bold; letter-spacing: 0.5px;">DAÑO CAUSADO</span></div>
+                    <div style="width: 33%;"><span id="perfil-mvp" style="font-size: 18px; color: #ffeb3b; font-weight: bold; text-shadow: 0 0 5px #ffeb3b, 0 2px 5px #000;">0</span><br><span style="color: #e0d0b0; font-size: 9px; font-weight: bold; letter-spacing: 1px;">MVP</span></div>
+                    <div style="width: 33%;"><span id="perfil-dmg-recibido" style="font-size: 16px; color: #ff3333; font-weight: bold; text-shadow: 0 0 5px #ff3333, 0 2px 5px #000;">0</span><br><span style="color: #e0d0b0; font-size: 8px; font-weight: bold; letter-spacing: 0.5px;">DAÑO RECIBIDO</span></div>
+                </div>
+
+                <hr style="border: 0; border-top: 1px dashed rgba(255,255,255,0.2); width: 90%; margin: 8px auto;">
+                
+                <div style="display: flex; flex-wrap: wrap; justify-content: center; width: 100%; gap: 0;">
+                    <button class="hero-pick-btn" style="width: 25%;" id="btn-top-1">
+                        <span id="perfil-top-1-val" style="font-size: 16px; font-weight: bold;">0</span><br><span id="perfil-top-1-name" style="color: #e0d0b0; font-size: 9px; font-weight: bold; text-transform: uppercase;">HEROE 1</span>
+                    </button>
+                    <button class="hero-pick-btn" style="width: 25%;" id="btn-top-2">
+                        <span id="perfil-top-2-val" style="font-size: 16px; font-weight: bold;">0</span><br><span id="perfil-top-2-name" style="color: #e0d0b0; font-size: 9px; font-weight: bold; text-transform: uppercase;">HEROE 2</span>
+                    </button>
+                    <button class="hero-pick-btn" style="width: 25%;" id="btn-top-3">
+                        <span id="perfil-top-3-val" style="font-size: 16px; font-weight: bold;">0</span><br><span id="perfil-top-3-name" style="color: #e0d0b0; font-size: 9px; font-weight: bold; text-transform: uppercase;">HEROE 3</span>
+                    </button>
+                    <button class="hero-pick-btn" style="width: 25%;" onclick="Perfil.abrirModalStats('SOUL-SNIPER')">
+                        <span style="font-size: 18px; color: #fff; font-weight: bold; text-shadow: 0 0 5px rgba(255,255,255,0.8), 0 2px 5px #000;">+</span><br><span style="color: #e0d0b0; font-size: 9px; font-weight: bold;">TODOS</span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="tab-tienda-lower" class="tab-lower-content" style="display: none; text-align: center;">
+                <p style="color: #e0d0b0; font-size: 14px; margin-top: 20px; text-shadow: 0 2px 4px #000; font-weight: bold;">Los mercaderes aún están recolectando artefactos en las ruinas.</p>
+            </div>
+        </div>
+
+        <div id="caja-34" class="tab-jugar-box" style="display: flex; gap: 15px; align-items: center; justify-content: center;">
+            <button class="role-btn tut-btn" onclick="Game.initTutorial()" style="flex: 1; border-color: #00ffaa; color: #00ffaa; font-size: 12px; padding: 10px 0;">🎓 ENTRENAMIENTO</button>
+            <button class="role-btn sim-btn" onclick="Game.initSimulation()" style="flex: 1; border-color: #ffaa00; color: #ffaa00; font-size: 12px; padding: 10px 0;">👁️ MODO IA</button>
+        </div>
+
+        <div id="caja-35" class="tab-jugar-box" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+            <span style="color: #e0d0b0; font-size: 10px; margin-bottom: 5px; text-transform: uppercase; font-weight: bold; text-shadow: 0 2px 4px #000;">Personaje</span>
+            <button id="btn-main-hero" class="role-btn char-btn" onclick="UI.abrirModal('modal-heroe')" style="width: 100%; height: 60%; font-size: 14px; border-color: #facc15; color: #facc15; box-shadow: inset 0 0 8px rgba(250, 204, 21, 0.3); cursor: pointer;">🏹 SNIPER</button>         
+        </div>
+
+        <div id="caja-36" class="tab-jugar-box" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+            <span style="color: #e0d0b0; font-size: 10px; margin-bottom: 5px; text-transform: uppercase; font-weight: bold; text-shadow: 0 2px 4px #000;">Bando</span>
+            <div style="display: flex; gap: 8px; width: 100%; height: 60%;">                 
+                <button id="btn-team-blue" class="role-btn team-btn active-blue" onclick="window.seleccionarBando(1)" style="flex: 1; height: 100%;">AZUL</button>                 
+                <button id="btn-team-red" class="role-btn team-btn" onclick="window.seleccionarBando(2)" style="flex: 1; height: 100%;">ROJO</button>             
+            </div> 
+        </div>
+
+        <div id="caja-37" class="tab-jugar-box" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+            <span style="color: #e0d0b0; font-size: 10px; margin-bottom: 5px; text-transform: uppercase; font-weight: bold; text-shadow: 0 2px 4px #000;">Talento</span>
+            <button id="btn-main-talento" class="role-btn char-btn" onclick="UI.abrirModal('modal-talento')" style="width: 100%; height: 60%; font-size: 14px; border-color: #38bdf8; color: #38bdf8; box-shadow: inset 0 0 8px rgba(56, 189, 248, 0.3); cursor: pointer;">🪝 GANCHO</button>                 
+        </div>
+
+        <div id="caja-38" class="tab-jugar-box" style="display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0.6;">
+            <span style="color: #e0d0b0; font-size: 9px; margin-bottom: 5px; text-transform: uppercase; font-weight: bold; text-shadow: 0 2px 4px #000;">Modo</span>
+            <button class="role-btn" style="width: 100%; height: 60%; border-color: #555; color: #888; cursor: not-allowed;">PVP / BOTS</button>
+        </div>
+
+        <div id="caja-40" class="tab-jugar-box" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+            <span style="color: #e0d0b0; font-size: 9px; margin-bottom: 5px; text-transform: uppercase; font-weight: bold; text-shadow: 0 2px 4px #000;">Dificultad</span>
+            <button id="btn-main-dificultad" class="role-btn" onclick="UI.abrirModal('modal-dificultad')" style="width: 100%; height: 60%; font-size: 12px; border-color: #ff3333; color: #ff3333; box-shadow: inset 0 0 8px rgba(255, 51, 51, 0.3); cursor: pointer;">🟢 FÁCIL</button>
+        </div>
+
+        <div id="caja-39" class="tab-jugar-box" style="display: flex; align-items: center; justify-content: center;">
+            <button class="role-btn" onclick="socket.emit('arrancar_partida')" style="width: 100%; height: 100%; font-size: 14px; font-weight: bold; background: rgba(56, 189, 248, 0.15); border-color: #38bdf8; color: #38bdf8; text-shadow: 0 0 5px #38bdf8; box-shadow: inset 0 0 10px rgba(56, 189, 248, 0.4); cursor: pointer; transition: 0.2s;">ENTRAR 🚀</button>
+        </div>
+
+        <div id="caja-10"></div> <div id="caja-26"></div> <div id="caja-27"></div> 
+        
+        <div id="caja-11" class="tab-jugar-box" style="display: none !important;"></div>
+        <div id="caja-28" class="tab-jugar-box" style="display: none !important;"></div>
+        <div id="caja-29" class="tab-jugar-box" style="display: none !important;"></div>
+        <div id="caja-17" class="tab-jugar-box" style="display: none !important;"></div>
+        
+        <div id="caja-12" class="tab-jugar-box" style="display: none !important;"></div>
+        <div id="caja-30" class="tab-jugar-box" style="display: none !important;"></div>
+        <div id="caja-32" class="tab-jugar-box" style="display: none !important;"></div>
+        <div id="caja-18" class="tab-jugar-box" style="display: none !important;"></div> 
+
+        <div id="caja-13" class="tab-jugar-box" style="display: none !important;"></div> 
+        <div id="caja-31" class="tab-jugar-box" style="display: none !important;"></div> 
+        <div id="caja-33" class="tab-jugar-box" style="display: none !important;"></div> 
+        <div id="caja-19" class="tab-jugar-box" style="display: none !important;"></div>
+
+        <div id="btn-sala-container" style="position: absolute; bottom: 12%; left: 15%; width: 70%; height: 10%; display: flex; align-items: center; justify-content: center; z-index: 50;">
+            <button id="btn-open-sala" class="role-btn char-btn" onclick="UI.abrirModal('modal-sala')" style="width: 100%; height: 100%; font-size: 15px; border-color: #a855f7; color: #a855f7; background: rgba(168, 85, 247, 0.08); box-shadow: inset 0 0 15px rgba(168, 85, 247, 0.4); cursor: pointer; text-shadow: 0 0 5px #a855f7; letter-spacing: 2px;">
+                📡 VER SALA DE ESPERA (1/6)
+            </button>
+        </div>
+        
+        <div id="perfil-bar-1" class="tab-perfil-box" style="display: none; position: absolute; top: 69.5%; left: 12%; width: 75%; height: 4.5%; align-items: center; justify-content: center;">
+            <button class="stats-btn btn-outline" onclick="Perfil.abrirHistorial()" style="width: 100%; height: 100%; padding: 0; border-color: #38bdf8; color: #38bdf8; box-shadow: inset 0 0 10px rgba(56,189,248,0.2); font-size: 11px; letter-spacing: 1px;">📜 REGISTRO DE COMBATE</button>
+        </div>
+        <div id="perfil-bar-2" class="tab-perfil-box" style="display: none; position: absolute; top: 74.2%; left: 12%; width: 75%; height: 4.5%; align-items: center; justify-content: center;">
+            <button class="stats-btn btn-outline" onclick="UI.abrirModal('modal-proximamente-bots')" style="width: 100%; height: 100%; padding: 0; border-color: #00ffaa; color: #00ffaa; box-shadow: inset 0 0 10px rgba(0,255,170,0.2); font-size: 11px; letter-spacing: 1px;">🤖 ESTADÍSTICAS VS BOTS</button>
+        </div>
+        <div id="perfil-bar-3" class="tab-perfil-box" style="display: none; position: absolute; top: 78.8%; left: 12%; width: 75%; height: 4.5%; align-items: center; justify-content: center;">
+            <button class="stats-btn btn-outline" onclick="UI.abrirModal('modal-proximamente-pvp')" style="width: 100%; height: 100%; padding: 0; border-color: #ffaa00; color: #ffaa00; box-shadow: inset 0 0 10px rgba(255,170,0,0.2); font-size: 11px; letter-spacing: 1px;">⚔️ PVP Y RANKED (LIGAS)</button>
+        </div>
+
+        <div id="caja-20"></div> <div id="caja-21"></div> <div id="caja-22"></div> <div id="caja-23"></div> <div id="caja-24"></div> <div id="caja-25"></div> 
+
+    </div>     
+    
+    <div id="modal-proximamente-bots" class="lobby-modal" style="display:none;">
+        <div class="lobby-modal-content" style="text-align: center;">
+            <h3 style="color: #00ffaa; margin-top:0;">ESTADÍSTICAS VS BOTS</h3>
+            <p style="color: #ccc; font-size: 12px; line-height: 1.5; text-align: left;">Las estadísticas que ves en la cuadrícula de tu Hoja de Servicio corresponden a tu desempeño actual contra la IA del juego. ¡Sigue practicando duro para cuando se abran las puertas del servidor!</p>
+            <div class="modal-actions" style="justify-content: center; margin-top: 15px;">
+                <button class="stats-btn btn-cyan" onclick="UI.cerrarModal('modal-proximamente-bots')">ENTENDIDO</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-proximamente-pvp" class="lobby-modal" style="display:none;">
+        <div class="lobby-modal-content" style="text-align: center;">
+            <h3 style="color: #ffaa00; margin-top:0;">MODO MULTIJUGADOR</h3>
+            <p style="color: #ccc; font-size: 12px; line-height: 1.5; text-align: left;">
+                📡 <strong>CONECTANDO AL SERVIDOR...</strong><br><br>
+                <span style="color: #ff3333; font-weight: bold;">[ERROR 404] Servidores Centrales inactivos.</span><br><br>
+                El modo PVP y el Sistema de Ligas (Ranked) estarán disponibles cuando la infraestructura multijugador esté en línea. Podrás acumular puntos MMR y subir a Rango Hades.
+            </p>
+            <div class="modal-actions" style="justify-content: center; margin-top: 15px;">
+                <button class="stats-btn btn-gold" onclick="UI.cerrarModal('modal-proximamente-pvp')">CERRAR PANTALLA</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-historial" class="lobby-modal" style="display:none;">
+        <div class="lobby-modal-content" style="padding: 20px;">
+            <h2 class="title-glow" style="text-align: center; margin-top:0; color: #38bdf8; text-shadow: 0 0 10px rgba(56,189,248,0.5);">REGISTRO DE COMBATE</h2>
+            <div id="historial-lista" style="display: flex; flex-direction: column; gap: 8px; margin-top: 15px; max-height: 55vh; overflow-y: auto; padding-right: 5px;">
+            </div>
+            <div class="modal-actions" style="justify-content: center; margin-top: 20px;">
+                <button class="stats-btn btn-outline" onclick="Perfil.cerrarHistorial()">CERRAR REGISTRO</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-stats-todos" class="lobby-modal" style="display:none;">
+        <div class="lobby-modal-content" style="display: flex; flex-direction: column; padding: 15px;">
+            <h3 style="text-align: center; color: #facc15; margin: 0 0 10px 0; text-shadow: 0 0 5px rgba(250,204,21,0.5);">REGISTRO DE HÉROES</h3>
+            
+            <div class="hero-roster-scroll" style="display: flex; overflow-x: auto; gap: 8px; padding-bottom: 8px; border-bottom: 1px dashed rgba(255,255,255,0.2); margin-bottom: 10px; scrollbar-width: none;">
+                <button id="roster-btn-SOUL-SNIPER" class="talent-btn" style="flex: 0 0 auto; min-width: max-content;" onclick="Perfil.seleccionarHeroeStats('SOUL-SNIPER')">🏹 SNIPER</button>
+                <button id="roster-btn-SHADOWBLADE" class="talent-btn" style="flex: 0 0 auto; min-width: max-content;" onclick="Perfil.seleccionarHeroeStats('SHADOWBLADE')">🗡️ SHADOW</button>
+                <button id="roster-btn-ASH-GUARD" class="talent-btn" style="flex: 0 0 auto; min-width: max-content;" onclick="Perfil.seleccionarHeroeStats('ASH-GUARD')">🛡️ GUARD</button>
+                <button id="roster-btn-NATURE-DRUID" class="talent-btn" style="flex: 0 0 auto; min-width: max-content;" onclick="Perfil.seleccionarHeroeStats('NATURE-DRUID')">🌿 DRUIDA</button>
+                <button id="roster-btn-ABYSSAL-PIRATE" class="talent-btn" style="flex: 0 0 auto; min-width: max-content;" onclick="Perfil.seleccionarHeroeStats('ABYSSAL-PIRATE')">☠️ PIRATA</button>
+                <button id="roster-btn-STEEL-MERCENARY" class="talent-btn" style="flex: 0 0 auto; min-width: max-content;" onclick="Perfil.seleccionarHeroeStats('STEEL-MERCENARY')">⚙️ MERCENARIO</button>
+                <button id="roster-btn-RAGE-BRAWLER" class="talent-btn" style="flex: 0 0 auto; min-width: max-content;" onclick="Perfil.seleccionarHeroeStats('RAGE-BRAWLER')">🥊 COMBATIENTE</button>
+                <button id="roster-btn-FLAME-MAGE" class="talent-btn" style="flex: 0 0 auto; min-width: max-content;" onclick="Perfil.seleccionarHeroeStats('FLAME-MAGE')">🔥 MAGO</button>
+            </div>
+
+            <h2 id="modal-heroe-title-stats" class="title-glow" style="text-align: center; margin-top:5px; margin-bottom: 10px;">🏹 SNIPER</h2>
+            
+            <div class="stats-grid-heroe">
+                <div class="stat-item"><span>BAJAS</span><span id="modal-heroe-bajas-stats" class="blue-text">0</span></div>
+                <div class="stat-item"><span>MUERTES</span><span id="modal-heroe-muertes-stats" class="red-text">0</span></div>
+                <div class="stat-item"><span>PARTIDAS</span><span id="modal-heroe-partidas-stats">0</span></div>
+                <div class="stat-item"><span>VICTORIAS</span><span id="modal-heroe-victorias-stats" class="green-text">0</span></div>
+                <div class="stat-item"><span>WIN RATE</span><span id="modal-heroe-wr-stats" class="gold-text">0%</span></div>
+                <div class="stat-item"><span>MVP</span><span id="modal-heroe-mvp-stats" class="gold-text">0</span></div>
+            </div>
+            
+            <div class="stats-dmg-box">
+                <div class="dmg-row">
+                    <span>DAÑO CAUSADO (TOTAL):</span> <span id="modal-heroe-dmg-total" class="blue-text">0</span>
+                </div>
+                <div class="dmg-row">
+                    <span>PROMEDIO POR PARTIDA:</span> <span id="modal-heroe-dmg-avg" class="blue-text">0 / p</span>
+                </div>
+                <hr style="border: 0; border-top: 1px dashed rgba(255,255,255,0.2); margin: 8px 0;">
+                <div class="dmg-row">
+                    <span>DAÑO RECIBIDO (TOTAL):</span> <span id="modal-heroe-rec-total" class="red-text">0</span>
+                </div>
+                <div class="dmg-row">
+                    <span>PROMEDIO POR PARTIDA:</span> <span id="modal-heroe-rec-avg" class="red-text">0 / p</span>
+                </div>
+            </div>
+
+            <div class="modal-actions" style="justify-content: center; margin-top: 15px;">
+                <button class="stats-btn btn-outline" onclick="Perfil.cerrarModalStats()">CERRAR ESTADÍSTICAS</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-heroe" class="lobby-modal" style="display:none;">
+        <div class="lobby-modal-content split-modal">
+            <div class="modal-left">
+                <h3>SELECCIONA TU HÉROE</h3>
+                <div class="modal-list" style="max-height: 250px; overflow-y: auto; scrollbar-width: none;">
+                    <button id="list-btn-SOUL-SNIPER" onclick="UI.previsualizarHeroe('SOUL-SNIPER')">🏹 SNIPER</button>
+                    <button id="list-btn-SHADOWBLADE" onclick="UI.previsualizarHeroe('SHADOWBLADE')">🗡️ SHADOW</button>
+                    <button id="list-btn-ASH-GUARD" onclick="UI.previsualizarHeroe('ASH-GUARD')">🛡️ GUARD</button>
+                    <button id="list-btn-NATURE-DRUID" onclick="UI.previsualizarHeroe('NATURE-DRUID')">🌿 DRUIDA</button>
+                    <button id="list-btn-ABYSSAL-PIRATE" onclick="UI.previsualizarHeroe('ABYSSAL-PIRATE')">☠️ PIRATA</button>
+                    <button id="list-btn-STEEL-MERCENARY" onclick="UI.previsualizarHeroe('STEEL-MERCENARY')">⚙️ MERCENARIO</button>
+                    <button id="list-btn-RAGE-BRAWLER" onclick="UI.previsualizarHeroe('RAGE-BRAWLER')">🥊 COMBATIENTE</button>
+                    <button id="list-btn-FLAME-MAGE" onclick="UI.previsualizarHeroe('FLAME-MAGE')">🔥 MAGO</button>
+                </div>
+            </div>
+            <div class="modal-right">
+                <div class="preview-card">
+                    <div class="preview-img-placeholder">IMAGEN DEL HÉROE</div>
+                    <h2 id="hero-preview-name" class="blue-text">SNIPER</h2>
+                    <p id="hero-preview-desc">Tirador letal a larga distancia. Poca salud, daño masivo.</p>
+                </div>
+                <div class="modal-actions">
+                    <button class="stats-btn btn-outline" onclick="UI.cerrarModal('modal-heroe')">CANCELAR</button>
+                    <button class="stats-btn btn-gold" onclick="UI.confirmarHeroe()">CONFIRMAR</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-talento" class="lobby-modal" style="display:none;">
+        <div class="lobby-modal-content">
+            <h3 style="text-align: center; color: #38bdf8; margin-top: 0;">SELECCIONA TU TALENTO</h3>
+            <div class="talent-grid">
+                <button id="tal-btn-gancho" class="talent-btn" onclick="UI.seleccionarTalentoUI('gancho', '🪝 GANCHO', 'Lanza un gancho para arrastrar al enemigo hacia ti.')">🪝 GANCHO</button>
+                <button id="tal-btn-piedra" class="talent-btn" onclick="UI.seleccionarTalentoUI('piedra', '🗿 PIEDRA', 'Te vuelves invulnerable e inmóvil por 1.5s.')">🗿 PIEDRA</button>
+                <button id="tal-btn-stun" class="talent-btn new-talent" onclick="UI.seleccionarTalentoUI('stun', '⚡ ATURDIR', 'Aturde a un enemigo cercano por 0.9 segundos.')">⚡ ATURDIR</button>
+                <button id="tal-btn-hielo" class="talent-btn new-talent" onclick="UI.seleccionarTalentoUI('hielo', '❄️ BOLA DE HIELO', 'Lanza un área helada que ralentiza por 1.3s.')">❄️ HIELO</button>
+                <button id="tal-btn-purificar" class="talent-btn new-talent" onclick="UI.seleccionarTalentoUI('purificar', '✨ PURIFICAR', 'Remueve el control de masas y otorga velocidad.')">✨ PURIFICAR</button>
+                <button id="tal-btn-teleport" class="talent-btn new-talent" onclick="UI.seleccionarTalentoUI('teleport', '🌌 TELEPORT', 'Salto táctico. Te teletransporta 1300 unidades tras 1.3s de preparación.')">🌌 TELEPORT</button>
+            </div>
+            <p id="talent-desc-preview" style="color: #ccc; text-align: center; font-size: 12px; min-height: 30px; margin-top: 15px;">Selecciona una habilidad.</p>
+            <div class="modal-actions" style="justify-content: center; margin-top: 20px;">
+                <button class="stats-btn btn-outline" onclick="UI.cerrarModal('modal-talento')">CANCELAR</button>
+                <button class="stats-btn btn-cyan" onclick="UI.confirmarTalento()">CONFIRMAR</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-dificultad" class="lobby-modal" style="display:none;">
+        <div class="lobby-modal-content">
+            <h3 style="text-align: center; color: #ff3333; margin-top: 0;">NIVEL DE AMENAZA (BOTS)</h3>
+            <div class="diff-grid">
+                <button id="diff-btn-facil" class="diff-btn" onclick="UI.seleccionarDificultadUI('facil', '🟢 FÁCIL', 'Composición enemiga: Tirador, Guard, Shadow')">🟢 FÁCIL</button>
+                <button id="diff-btn-medio" class="diff-btn" onclick="UI.seleccionarDificultadUI('medio', '🟡 MEDIO', 'Composición enemiga: Tirador, Druida, Guard')">🟡 MEDIO</button>
+                <button id="diff-btn-hades" class="diff-btn" onclick="UI.seleccionarDificultadUI('hades', '💀 HADES', 'Composición enemiga: Combatiente, Mago de Fuego, Mercenario')">💀 HADES</button>
+            </div>
+            <p id="diff-desc-preview" style="color: #ccc; text-align: center; font-size: 12px; min-height: 30px; margin-top: 15px;">Selecciona un nivel de dificultad.</p>
+            <div class="modal-actions" style="justify-content: center; margin-top: 20px;">
+                <button class="stats-btn btn-outline" onclick="UI.cerrarModal('modal-dificultad')">CANCELAR</button>
+                <button class="stats-btn btn-cyan" onclick="UI.confirmarDificultad()" style="border-color: #ff3333; color: #ff3333; box-shadow: inset 0 0 10px rgba(255,51,51,0.3);">CONFIRMAR</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-sala" class="lobby-modal" style="display:none;">
+        <div class="lobby-modal-content" style="max-width: 90%; width: 450px;">
+            <h3 style="text-align: center; color: #a855f7; margin-top: 0; text-shadow: 0 0 8px rgba(168,85,247,0.5);">📡 SALA DE ESPERA PVP</h3>
+            
+            <div style="display: flex; justify-content: space-between; gap: 10px; margin-top: 15px;">
+                <div style="flex: 1; border: 1px solid rgba(0, 229, 255, 0.4); background: rgba(0, 229, 255, 0.05); padding: 10px; border-radius: 8px; box-shadow: inset 0 0 15px rgba(0,229,255,0.1);">
+                    <h4 style="text-align: center; color: #00e5ff; margin: 0 0 10px 0; text-shadow: 0 0 5px #00e5ff;">🔵 AZUL</h4>
+                    <div id="sala-azul-1" style="color: #7b7b94; font-size: 11px; margin-bottom: 8px; text-align: center; padding: 6px; background: rgba(0,0,0,0.4); border-radius: 4px;">1. Esperando...</div>
+                    <div id="sala-azul-2" style="color: #7b7b94; font-size: 11px; margin-bottom: 8px; text-align: center; padding: 6px; background: rgba(0,0,0,0.4); border-radius: 4px;">2. Esperando...</div>
+                    <div id="sala-azul-3" style="color: #7b7b94; font-size: 11px; margin-bottom: 8px; text-align: center; padding: 6px; background: rgba(0,0,0,0.4); border-radius: 4px;">3. Esperando...</div>
+                    <button class="role-btn team-btn" onclick="window.seleccionarBando(1)" style="width: 100%; border-color: #00e5ff; color: #00e5ff; font-size: 10px; margin-top: 5px; cursor:pointer;">UNIRSE AL AZUL</button>
+                </div>
+                <div style="flex: 1; border: 1px solid rgba(255, 51, 51, 0.4); background: rgba(255, 51, 51, 0.05); padding: 10px; border-radius: 8px; box-shadow: inset 0 0 15px rgba(255,51,51,0.1);">
+                    <h4 style="text-align: center; color: #ff3333; margin: 0 0 10px 0; text-shadow: 0 0 5px #ff3333;">🔴 ROJO</h4>
+                    <div id="sala-rojo-1" style="color: #7b7b94; font-size: 11px; margin-bottom: 8px; text-align: center; padding: 6px; background: rgba(0,0,0,0.4); border-radius: 4px;">1. Esperando...</div>
+                    <div id="sala-rojo-2" style="color: #7b7b94; font-size: 11px; margin-bottom: 8px; text-align: center; padding: 6px; background: rgba(0,0,0,0.4); border-radius: 4px;">2. Esperando...</div>
+                    <div id="sala-rojo-3" style="color: #7b7b94; font-size: 11px; margin-bottom: 8px; text-align: center; padding: 6px; background: rgba(0,0,0,0.4); border-radius: 4px;">3. Esperando...</div>
+                    <button class="role-btn team-btn" onclick="window.seleccionarBando(2)" style="width: 100%; border-color: #ff3333; color: #ff3333; font-size: 10px; margin-top: 5px; cursor:pointer;">UNIRSE AL ROJO</button>
+                </div>
+            </div>
+
+            <p style="color: #ccc; text-align: center; font-size: 11px; margin-top: 15px;">* Los espacios vacíos serán rellenados por Bots de IA al entrar.</p>
+            
+            <div class="modal-actions" style="justify-content: center; margin-top: 15px;">
+                <button class="stats-btn btn-outline" onclick="UI.cerrarModal('modal-sala')">CERRAR</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="loading-screen" style="display: none;">
+        <img src="Partida.png" alt="Cargando Arena" id="loading-bg">
+        <div class="loader-content" id="clean-loader">             
+            <div class="progress-bar-bg">                 
+                <div class="progress-bar-fill" id="loading-bar"></div>             
+            </div>             
+        </div>     
+    </div>     
+    
+    <div id="simulation-screen">         
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">             
+            <h2>TERMINAL DE CONTROL [IA]</h2>             
+            <button id="sim-stop-btn" onclick="Game.stopSimulation()">DETENER SIMULACIÓN</button>         
+        </div>         
+        <div id="sim-console"></div>         
+        <div id="sim-minimap-wrapper"><canvas id="simMinimapCanvas" width="200" height="200"></canvas></div>     
+    </div>     
+    
+    <div id="game-over-screen" style="display: none;">         
+        <div id="stats-main-view">             
+            <img src="Plantillafinal.png" id="results-bg-img" alt="Resultados">
+            <h1 id="stats-title" class="victory-title"></h1>             
+            <div id="res-1" class="res-box blue-text" style="font-size: 1.2rem; font-weight: bold;"></div> 
+            <div id="res-2" class="res-box red-text" style="font-size: 1.2rem; font-weight: bold;"></div> 
+            <div id="res-3" class="res-box" style="font-size: 1rem; color: #ccc;"></div> 
+            <div id="res-4" class="res-box icon-col"></div><div id="res-5" class="res-box"></div><div id="res-6" class="res-box"></div><div id="res-7" class="res-box dmg-dealt"></div><div id="res-8" class="res-box dmg-taken"></div><div id="res-9" class="res-box captures"></div>
+            <div id="res-10" class="res-box icon-col"></div><div id="res-11" class="res-box"></div><div id="res-12" class="res-box"></div><div id="res-13" class="res-box dmg-dealt"></div><div id="res-14" class="res-box dmg-taken"></div><div id="res-15" class="res-box captures"></div>
+            <div id="res-16" class="res-box icon-col"></div><div id="res-17" class="res-box"></div><div id="res-18" class="res-box"></div><div id="res-19" class="res-box dmg-dealt"></div><div id="res-20" class="res-box dmg-taken"></div><div id="res-21" class="res-box captures"></div>
+            <div id="res-22" class="res-box icon-col"></div><div id="res-23" class="res-box"></div><div id="res-24" class="res-box"></div><div id="res-25" class="res-box dmg-dealt"></div><div id="res-26" class="res-box dmg-taken"></div><div id="res-27" class="res-box captures"></div>
+            <div id="res-28" class="res-box icon-col"></div><div id="res-29" class="res-box"></div><div id="res-30" class="res-box"></div><div id="res-31" class="res-box dmg-dealt"></div><div id="res-32" class="res-box dmg-taken"></div><div id="res-33" class="res-box captures"></div>
+            <div id="res-34" class="res-box icon-col"></div><div id="res-35" class="res-box"></div><div id="res-36" class="res-box"></div><div id="res-37" class="res-box dmg-dealt"></div><div id="res-38" class="res-box dmg-taken"></div><div id="res-39" class="res-box captures"></div>
+            <div id="res-40" class="res-box icon-col"></div><div id="res-41" class="res-box"></div><div id="res-42" class="res-box"></div><div id="res-43" class="res-box dmg-dealt"></div><div id="res-44" class="res-box dmg-taken"></div><div id="res-45" class="res-box captures"></div>
+            <button id="btn-continuar" class="stats-btn btn-outline" onclick="Game.returnToLobby()">CONTINUAR</button>                 
+            <button id="btn-totales" class="stats-btn btn-cyan" onclick="UI.toggleStatsView('totals')"> TOTALES</button>             
+        </div>         
+
+        <div id="stats-totals-modal" style="display:none;">             
+            <div class="modal-content-glass">
+                <div class="team-stats-box blue-box">                 
+                    <div class="stats-grid-header icons-header"><span class="blue-text">RESUMEN AZUL</span></div>                 
+                    <div id="blue-totals-row" class="stats-rows"></div>                 
+                    <div class="analysis-box">                     
+                        <h3>ANÁLISIS DE NEXO</h3>                     
+                        <div><span> Tiempo de Control de Torres:</span> <span id="blue-time-control"></span></div>                     
+                        <div><span> Daño a Nexo (Por Control):</span> <span id="blue-dmg-control" class="blue-text"></span></div>                     
+                        <div><span> Puntos Perdidos (Por Muertes):</span> <span id="blue-loss-deaths" class="red-text"></span></div>                 
+                    </div>             
+                </div>             
+                <div class="team-stats-box red-box" style="margin-top: 15px;">                 
+                    <div class="stats-grid-header icons-header"><span class="red-text">RESUMEN ROJO</span></div>                 
+                    <div id="red-totals-row" class="stats-rows"></div>                 
+                    <div class="analysis-box">                     
+                        <h3>ANÁLISIS DE NEXO</h3>                     
+                        <div><span> Tiempo de Control de Torres:</span> <span id="red-time-control"></span></div>                     
+                        <div><span> Daño a Nexo (Por Control):</span> <span id="red-dmg-control" class="red-text"></span></div>                     
+                        <div><span> Puntos Perdidos (Por Muertes):</span> <span id="red-loss-deaths" class="red-text"></span></div>                 
+                    </div>             
+                </div>             
+                <div class="mvp-impact-box" style="margin-top: 15px;">                 
+                    <h3> IMPACTO DEL MVP </h3>                 
+                    <div><span> Tiempo de Dominio Propio:</span> <span id="mvp-time-control"></span></div>                 
+                    <div><span> Daño a Nexo (Por Bajas):</span> <span id="mvp-dmg-kills"></span></div>                 
+                    <div><span> Daño a Nexo (Por Control):</span> <span id="mvp-dmg-control" class="gold-text"></span></div>                 
+                    <div><span> Penalización (Por Morir):</span> <span id="mvp-loss-deaths" class="red-text"></span></div>             
+                </div>             
+                <div class="stats-buttons" style="margin-top: 20px;">                 
+                    <button class="stats-btn btn-gold" onclick="UI.toggleStatsView('main')" style="width: 100%;">CERRAR TOTALES</button>             
+                </div>
+            </div>         
+        </div>     
+    </div>     
+    
+    <div id="settings-menu">         
+        <h2>AJUSTES TÁCTICOS</h2>         
+        <div style="margin: 15px 0; text-align: left;">
+            <label style="font-weight: bold; font-size: 0.9rem;">CÁMARA (ZOOM): <span id="zoom-val" style="color: #33ccff;">1.0</span>x</label>
+            <input type="range" id="zoom-slider" min="0.1" max="5.0" step="0.1" value="1.0" oninput="UI.updateCameraZoom(this.value)" onchange="UI.saveSettings()">
+        </div>         
+        <div style="margin: 15px 0; text-align: left;">
+            <label style="font-weight: bold; font-size: 0.9rem;">ÁNGULO CÁMARA: <span id="angle-val" style="color: #33ccff;">90</span>°</label>
+            <input type="range" id="angle-slider" min="30" max="90" step="5" value="90" oninput="UI.updateCameraAngle(this.value)" onchange="UI.saveSettings()">
+        </div>         
+        <div style="margin: 15px 0; text-align: left;">
+            <label style="font-weight: bold; font-size: 0.9rem;">SENSIBILIDAD: <span id="sens-val" style="color: #33ccff;">1.0</span>x</label>
+            <input type="range" id="sens-slider" min="0.5" max="2.0" step="0.1" value="1.0" oninput="UI.updateSens(this.value)" onchange="UI.saveSettings()">
+        </div>         
+        <div style="margin: 15px 0; text-align: left;">
+            <label style="font-weight: bold; font-size: 0.9rem;">VISIBILIDAD HUD: <span id="opacity-val" style="color: #33ccff;">1.0</span>x</label>
+            <input type="range" id="opacity-slider" min="0.1" max="1.0" step="0.1" value="1.0" oninput="UI.updateOpacity(this.value)" onchange="UI.saveSettings()">
+        </div>         
+        <button class="settings-btn-main" onclick="UI.startHUDCustomization()">ACOMODAR HUD</button>         
+        <button class="settings-btn-main" onclick="UI.resetHUD()">RESETEAR HUD</button>         
+        <button class="settings-btn-close" onclick="UI.toggleSettings()">CERRAR</button>     
+    </div>     
+    
+    <div id="hud-save-overlay">         
+        <span>MODO EDICIÓN ACTIVO</span><small>Ajusta las posiciones y escalas táctiles</small>         
+        <div id="scale-control">
+            <label style="color: white; font-weight: bold; font-size: 0.9rem;">TAMAÑO: <span id="scale-val" style="color: #33ccff;">1.0</span>x</label>
+            <input type="range" id="scale-slider" min="0.5" max="2.0" step="0.1" value="1.0" oninput="UI.updateElementScale(this.value)">
+        </div>         
+        <button onclick="UI.saveHUD()">GUARDAR POSICIONES</button>     
+    </div>     
+    
+    <div id="tutorial-radio" style="display: none;">
+        <div id="radio-avatar">CERO</div>
+        <div id="radio-text"></div>
+    </div>
+
+    <div id="top-hud" class="hud-element">
+        <div class="hud-row">
+            <div id="blue-nexus-hud" class="nexus-hud">NEXO: 500</div>
+            <div id="match-timer">08:00</div>
+            <div id="red-nexus-hud" class="nexus-hud">NEXO: 500</div>
+        </div>
+    </div>
+    
+    <div id="settings-btn" class="hud-element" onclick="UI.toggleSettings()">⚙️</div>
+         
+    <div id="cancel-zone"> </div>     
+    <div id="minimap-container" class="hud-element"><canvas id="minimapCanvas" width="100" height="100"></canvas></div>     
+    <div id="move-stick" class="stick-container move-stick hud-element"><div id="move-knob" class="stick-knob"></div></div>     
+    
+    <div id="atk-stick" class="stick-container atk-stick hud-element">
+        <div id="atk-knob" class="stick-knob">
+            <span class="knob-label">AIM</span>
+            <div id="atk-cd-bg" class="cd-overlay"></div>
+            <span id="atk-cd-text" class="cd-text"></span>
+        </div>
+    </div>     
+    
+    <div id="skill-stick" class="stick-container skill-stick hud-element">
+        <div id="skill-knob" class="stick-knob">
+            <span class="knob-label">SKILL</span>
+            <div id="skill-cd-bg" class="cd-overlay"></div>
+            <span id="skill-cd-text" class="cd-text"></span>
+        </div>
+    </div>     
+    
+    <div id="skill-stick-2" class="stick-container skill-stick-2 hud-element">
+        <div id="skill-knob-2" class="stick-knob">
+            <span class="knob-label" style="color: #444;">TALENTO</span>
+            <div id="talento-cd-bg" class="cd-overlay"></div>
+            <span id="talento-cd-text" class="cd-text"></span>
+        </div>
+    </div>     
+
+    <div id="recall-btn" class="stick-container hud-element"><div id="recall-knob" class="stick-knob"><span class="knob-label" style="color: yellow;">BASE</span></div></div>     
+    
+    <!-- === LA MAGIA ESTÁ AQUÍ === -->
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script>
+        const socket = io();
+
+        // Escuchamos a Termux: Nos manda la lista y nosotros pintamos la sala
+        socket.on('actualizar_sala', (jugadores) => {
+            // 1. Borramos todo visualmente para dejarlo en blanco
+            for(let i=1; i<=3; i++) {
+                let slotA = document.getElementById('sala-azul-'+i);
+                slotA.innerText = i + ". Esperando...";
+                slotA.style.color = '#7b7b94';
+                slotA.style.background = 'rgba(0,0,0,0.4)';
+                slotA.style.border = 'none';
+                
+                let slotR = document.getElementById('sala-rojo-'+i);
+                slotR.innerText = i + ". Esperando...";
+                slotR.style.color = '#7b7b94';
+                slotR.style.background = 'rgba(0,0,0,0.4)';
+                slotR.style.border = 'none';
+            }
+
+            // 2. Acomodamos a los jugadores reales según el equipo
+            let contadorAzul = 1;
+            let contadorRojo = 1;
+
+            for (let id in jugadores) {
+                let jugador = jugadores[id];
+                let esMiJugador = (id === socket.id);
+                let textoNombre = jugador.nombre + (esMiJugador ? " (Tú)" : "");
+
+                if (jugador.equipo === 1 && contadorAzul <= 3) {
+                    let slot = document.getElementById('sala-azul-' + contadorAzul);
+                    slot.innerText = contadorAzul + ". " + textoNombre;
+                    slot.style.color = '#fff';
+                    slot.style.background = esMiJugador ? 'rgba(0, 229, 255, 0.2)' : 'rgba(255, 255, 255, 0.1)';
+                    if(esMiJugador) slot.style.border = '1px solid #00e5ff';
+                    contadorAzul++;
+                } 
+                else if (jugador.equipo === 2 && contadorRojo <= 3) {
+                    let slot = document.getElementById('sala-rojo-' + contadorRojo);
+                    slot.innerText = contadorRojo + ". " + textoNombre;
+                    slot.style.color = '#fff';
+                    slot.style.background = esMiJugador ? 'rgba(255, 51, 51, 0.2)' : 'rgba(255, 255, 255, 0.1)';
+                    if(esMiJugador) slot.style.border = '1px solid #ff3333';
+                    contadorRojo++;
+                }
+            }
+            
+            // Actualizamos el numerito del botón morado
+            let totalJugadores = Object.keys(jugadores).length;
+            document.getElementById('btn-open-sala').innerText = `📡 VER SALA DE ESPERA (${totalJugadores}/6)`;
+        });
+
+        socket.on('iniciar_juego_todos', () => {
+            window.iniciarPartidaOficial(); 
+        });
+    </script>
+    <!-- ============================== -->
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>     
+    <script src="personajes.js"></script>     
+    <script src="mapa.js"></script>     
+    <script src="mecanicas.js"></script>     
+    <script src="ia.js"></script>     
+    <script src="skins.js"></script>     
+    <script src="audio.js"></script>
+    <script src="ui_hud.js"></script>     
+    <script src="ui_nav.js"></script>     
+    <script src="perfil.js"></script>
+    <script src="controles.js"></script> 
+    <script src="motor_mundo.js"></script>     
+    <script src="motor_core.js"></script>     
+    <script src="tutorial.js"></script> 
+    <script src="cliente.js"></script> 
+    <script src="game.js"></script> 
+
+    <script>
+        window.seleccionActual = { clase: 'SOUL-SNIPER', bando: 1, talento: 'gancho', dificultad: 'facil' };
+        window.tempSeleccion = { clase: 'SOUL-SNIPER', talento: 'gancho', talentoNombre: '🪝 GANCHO', dificultad: 'facil', dificultadNombre: '🟢 FÁCIL' };
+
+        window.heroInfo = {
+            'SOUL-SNIPER': { nombre: '🏹 SNIPER', desc: 'Tirador letal a larga distancia. Físicamente débil, pero su daño masivo y su visión periférica lo hacen perfecto para cazar desde las sombras.' },
+            'SHADOWBLADE': { nombre: '🗡️ SHADOW', desc: 'Asesino ágil e invisible. Especializado en emboscadas rápidas y letales, capaz de desaparecer en la oscuridad para cazar a los más vulnerables.' },
+            'ASH-GUARD': { nombre: '🛡️ GUARD', desc: 'Tanque pesado. Su escudo y radar revelan a los enemigos ocultos, aguantando oleadas de daño para proteger a sus aliados y ganar el control.' },
+            'NATURE-DRUID': { nombre: '🌿 DRUIDA', desc: 'Soporte mágico. Lanza rayos esmeraldas a distancia y su habilidad invoca un aura protectora que otorga escudos y velocidad de movimiento a su equipo.' },
+            'ABYSSAL-PIRATE': { nombre: '☠️ PIRATA', desc: 'Asesino y trampero táctico. Coloca minas venenosas casi invisibles que drenan la vida de los enemigos y los revelan en el radar a través de los muros.' },
+            'STEEL-MERCENARY': { nombre: '⚙️ MERCENARIO', desc: 'Controlador de zonas. Despliega una ballesta automática con su propia barra de vida que defiende el territorio y ataca a los enemigos en rango.' },
+            'RAGE-BRAWLER': { nombre: '🥊 COMBATIENTE', desc: 'Luchador cuerpo a cuerpo brutal. Entra en furia para ganar velocidad y un escudo temporal que absorbe grandes cantidades de daño.' },
+            'FLAME-MAGE': { nombre: '🔥 MAGO', desc: 'Mago de fuego destructivo. Lanza potentes bolas de fuego en área para calcinar grupos de enemigos, ganando velocidad temporal tras cada hechizo.' }
+        };
+
+        window.UI = window.UI || {};
+
+        UI.abrirModal = function(id) {
+            document.getElementById(id).style.display = 'flex';
+            if(id === 'modal-heroe') UI.previsualizarHeroe(window.seleccionActual.clase);
+            if(id === 'modal-talento') UI.seleccionarTalentoUI(window.seleccionActual.talento, window.tempSeleccion.talentoNombre, '');
+            if(id === 'modal-dificultad') UI.seleccionarDificultadUI(window.seleccionActual.dificultad, window.tempSeleccion.dificultadNombre, '');
+        };
+        
+        UI.cerrarModal = function(id) {
+            document.getElementById(id).style.display = 'none';
+        };
+
+        UI.previsualizarHeroe = function(clase) {
+            window.tempSeleccion.clase = clase;
+            document.getElementById('hero-preview-name').innerText = window.heroInfo[clase].nombre;
+            document.getElementById('hero-preview-desc').innerText = window.heroInfo[clase].desc;
+            
+            document.querySelectorAll('.modal-list button').forEach(btn => btn.classList.remove('active-list-btn'));
+            let btn = document.getElementById('list-btn-' + clase);
+            if(btn) btn.classList.add('active-list-btn');
+        };
+        
+        UI.confirmarHeroe = function() {
+            window.seleccionActual.clase = window.tempSeleccion.clase;
+            let btnMain = document.getElementById('btn-main-hero');
+            btnMain.innerText = window.heroInfo[window.seleccionActual.clase].nombre;
+            UI.cerrarModal('modal-heroe');
+        };
+
+        UI.seleccionarTalentoUI = function(id, nombre, desc) {
+            window.tempSeleccion.talento = id;
+            window.tempSeleccion.talentoNombre = nombre;
+            if(desc) document.getElementById('talent-desc-preview').innerText = desc;
+            
+            document.querySelectorAll('.talent-btn').forEach(btn => btn.classList.remove('active-talent-btn'));
+            let btn = document.getElementById('tal-btn-' + id);
+            if(btn) btn.classList.add('active-talent-btn');
+        };
+        
+        UI.confirmarTalento = function() {
+            window.seleccionActual.talento = window.tempSeleccion.talento;
+            let btnMain = document.getElementById('btn-main-talento');
+            btnMain.innerText = window.tempSeleccion.talentoNombre;
+            UI.cerrarModal('modal-talento');
+        };
+
+        UI.seleccionarDificultadUI = function(id, nombre, desc) {
+            window.tempSeleccion.dificultad = id;
+            window.tempSeleccion.dificultadNombre = nombre;
+            if(desc) document.getElementById('diff-desc-preview').innerText = desc;
+            
+            document.querySelectorAll('.diff-btn').forEach(btn => btn.classList.remove('active-diff-btn'));
+            let btn = document.getElementById('diff-btn-' + id);
+            if(btn) btn.classList.add('active-diff-btn');
+        };
+        
+        UI.confirmarDificultad = function() {
+            window.seleccionActual.dificultad = window.tempSeleccion.dificultad;
+            let btnMain = document.getElementById('btn-main-dificultad');
+            btnMain.innerText = window.tempSeleccion.dificultadNombre;
+            UI.cerrarModal('modal-dificultad');
+        };
+
+        // === CAMBIO AQUÍ: Le avisamos a Termux si quieres cambiar de bando ===
+        window.seleccionarBando = function(equipo) {
+            window.seleccionActual.bando = equipo;
+            
+            if(typeof socket !== 'undefined') {
+                socket.emit('cambiar_equipo', equipo); // "¡Termux, ponme en el bando 2!"
+            }
+
+            let btnBlue = document.getElementById('btn-team-blue');
+            let btnRed = document.getElementById('btn-team-red');
+            if(btnBlue && btnRed) {
+                if(equipo === 1) {
+                    btnBlue.classList.add('active-blue'); btnBlue.classList.remove('active-red');
+                    btnRed.classList.remove('active-red'); btnRed.classList.remove('active-blue');
+                } else {
+                    btnRed.classList.add('active-red'); btnRed.classList.remove('active-blue');
+                    btnBlue.classList.remove('active-blue'); btnBlue.classList.remove('active-red');
+                }
+            }
+            if(window.Game) Game.setTeam(equipo); 
+        };
+
+        window.iniciarPartidaOficial = function() {
+            let claseElegida = window.seleccionActual.clase;
+            if(typeof STATE !== 'undefined' && STATE.player) {
+                STATE.player.skill2Type = window.seleccionActual.talento;
+                STATE.dificultad = window.seleccionActual.dificultad; 
+            }
+            if(typeof Game !== 'undefined' && Game.initMatch) {
+                Game.selectedTeam = window.seleccionActual.bando; 
+                Game.initMatch(claseElegida);
+            }
+        };
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const loadingBar = document.getElementById('splash-loading-bar');
+            const loadingContainer = document.getElementById('loading-bar-container');
+            const touchToStart = document.getElementById('touch-to-start');
+            const splashScreen = document.getElementById('splash-screen');
+            const splashMain = document.getElementById('splash-main');
+            const lobby = document.getElementById('classic-client');
+
+            if(splashMain) splashMain.style.display = 'block';
+
+            let progress = 0;
+            let loadInterval = setInterval(() => {
+                progress += 4;
+                if(loadingBar) loadingBar.style.width = progress + '%';
+                if (progress >= 100) {
+                    clearInterval(loadInterval);
+                    if(loadingContainer) loadingContainer.style.display = 'none';
+                    if(touchToStart) touchToStart.style.display = 'block';
+                }
+            }, 50);
+
+            splashScreen.addEventListener('click', () => {
+                if (touchToStart && touchToStart.style.display === 'block') {
+                    splashScreen.style.transition = "opacity 0.5s ease-out";
+                    splashScreen.style.opacity = "0";
+                    setTimeout(() => {
+                        splashScreen.style.display = 'none';
+                        lobby.style.display = 'block'; 
+                        if (typeof AudioEngine !== 'undefined') AudioEngine.playTrack(AudioEngine.bgmLobby);
+                    }, 500); 
+                }
+            });
+        });
+    </script>
+</body> 
+</html>
