@@ -86,7 +86,6 @@ const Game = {
             p.skillCost = s.skillCost; p.maxCd = s.maxCd; p.chargeTimer = 0; p.isHyperReady = false; 
             p.aimingAtk = false; p.isAimingRight = false; p.manualAimAngle = 0; 
             
-            // === VARIABLE VITAL PARA EL TELEPORT (DRAG TO CAST) ===
             p.skill2Cd = 0; p.aimingSkill2 = false; p.wasAimingSkill2 = false; p.autoAimingSkill2 = false; p.isHooked = false; p.hookAttacker = null;
             
             p.stoneTimer = 0; p.stunTimer = 0; p.slowTimer = 0; p.purifyTimer = 0;
@@ -112,8 +111,16 @@ const Game = {
             if(typeof WORLD !== 'undefined' && WORLD.turrets) WORLD.turrets.forEach(t => { t.progress = 0; t.team = 0; });
             if(typeof WORLD !== 'undefined' && WORLD.pickups) WORLD.pickups.forEach(p => { p.active = true; p.respawnTimer = 0; }); 
             
+            // === MAGIA MULTIJUGADOR: AVISAR QUE ENTRAMOS AL MAPA ===
+            if (typeof socket !== 'undefined' && !isTutorial) {
+                socket.emit('entrar_arena', {
+                    x: p.x, y: p.y, hp: p.hp, maxHp: p.maxHp, mp: p.mp, maxMp: p.maxMp,
+                    class: p.class, team: p.team, lastAngle: p.lastAngle
+                });
+            }
+
             document.querySelectorAll('.hud-element').forEach(el => { 
-                if (el.id === 'top-hud' || el.id === 'settings-btn' || el.id === 'tutorial-radio') el.style.display = 'flex';
+                if (el.id === 'top-hud' || el.id === 'settings-btn' || el.id === 'tutorial-radio' || el.id === 'guide-btn') el.style.display = 'flex';
                 else el.style.display = 'block'; 
             });
             
@@ -331,7 +338,6 @@ const Game = {
             
             if (p.cd > 0) p.cd--;
             
-            // === LÓGICA DE APUNTADO DEL TALENTO (SOLO GIRA LA CÁMARA/VISOR) ===
             if (p.aimingSkill2 && p.skillOverrideTimer === 0) { 
                 let rangoTal = 0;
                 if(p.skill2Type === 'gancho') rangoTal = 700;
@@ -383,7 +389,6 @@ const Game = {
                 }
             }
 
-            // === LÓGICA DE EJECUCIÓN (CUANDO EL JUGADOR SUELTA EL BOTÓN Y NO ESTÁ CANCELANDO) ===
             if (!p.aimingSkill2 && p.wasAimingSkill2) {
                 if (!p.cancelAtk && p.skill2Cd <= 0) {
                     let rangoTalento = 0;
@@ -391,7 +396,7 @@ const Game = {
                     if(p.skill2Type === 'stun') { rangoTalento = 600; p.skill2MaxCd = 780; }
                     if(p.skill2Type === 'hielo') { rangoTalento = 700; p.skill2MaxCd = 780; }
                     if(p.skill2Type === 'purificar') { rangoTalento = 50; p.skill2MaxCd = 780; } 
-                    if(p.skill2Type === 'teleport') { rangoTalento = 1300; p.skill2MaxCd = 900; } // 15 Segundos
+                    if(p.skill2Type === 'teleport') { rangoTalento = 1300; p.skill2MaxCd = 900; }
                     
                     if (rangoTalento > 0) {
                         p.skill2Cd = p.skill2MaxCd;
@@ -452,7 +457,48 @@ const Game = {
             });
         }
         
+        // === OCULTAMOS LOS JUGADORES DE RED A LA IA PARA QUE NO LOS CONTROLE ===
+        let botsOriginales = [];
+        if (STATE.bots) {
+            botsOriginales = STATE.bots.filter(b => !b.isNetworkPlayer);
+        }
+        STATE.bots = botsOriginales;
+
         if(typeof IA !== 'undefined') IA.update(STATE); 
+        
+        // === MAGIA MULTIJUGADOR: INYECTAMOS A TUS AMIGOS EN EL MAPA ===
+        if (STATE.mode === 'playing' && !STATE.isTutorial && typeof socket !== 'undefined') {
+            if (STATE.matchFrames % 2 === 0) { // 30 veces por segundo
+                socket.emit('mover_jugador', {
+                    x: p.x, y: p.y, hp: p.hp, maxHp: p.maxHp, mp: p.mp, maxMp: p.maxMp,
+                    lastAngle: p.lastAngle, class: p.class, team: p.team,
+                    isAiming: (p.aimingAtk || p.aimingSkill || p.aimingSkill2),
+                    poisonTimer: p.poisonTimer, active: p.active
+                });
+            }
+            
+            if (STATE.jugadoresNube) {
+                let networkBots = [];
+                for (let id in STATE.jugadoresNube) {
+                    if (id !== STATE.miSocketId) {
+                        let jN = STATE.jugadoresNube[id];
+                        let bConf = CONFIG.ROLES[jN.class] || CONFIG.ROLES['SOUL-SNIPER'];
+                        networkBots.push({
+                            id: 'net_' + id, isBot: false, isNetworkPlayer: true,
+                            team: jN.team, class: jN.class,
+                            x: jN.x, y: jN.y, hp: jN.hp, maxHp: jN.maxHp, mp: jN.mp, maxMp: jN.maxMp,
+                            lastAngle: jN.lastAngle, aimingAtk: jN.isAiming,
+                            poisonTimer: jN.poisonTimer || 0, active: jN.active || false,
+                            radius: bConf.radius, fov: bConf.fov, range: bConf.range,
+                            speed: bConf.speed, baseSpeed: bConf.speed, visible: true
+                        });
+                    }
+                }
+                // Añadimos a tus amigos reales al mapa para que puedas verlos y golpearlos
+                STATE.bots = STATE.bots.concat(networkBots);
+            }
+        }
+
         if(typeof Colisiones !== 'undefined') Colisiones.update(STATE); 
         if(typeof Habilidades !== 'undefined') Habilidades.updateEnvironment(STATE); 
         if(typeof Proyectiles !== 'undefined') Proyectiles.update(STATE);
