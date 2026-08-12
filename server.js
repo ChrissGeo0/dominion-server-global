@@ -4,13 +4,12 @@ const http = require('http').createServer(app);
 const path = require('path');
 const io = require('socket.io')(http, { cors: { origin: "*" } });
 
-// 1. Render nos da el puerto automáticamente
+// En Render, el puerto lo da el sistema automático. 
 const PORT = process.env.PORT || 3000;
-
-// 2. Le decimos que los archivos del juego están en esta misma carpeta
-app.use(express.static(__dirname)); 
+app.use(express.static(path.join(__dirname, '../dominion of beta 5')));
 
 let jugadoresEnSala = {};
+let jugadoresEnPartida = {}; // Aquí guardaremos X, Y, Vida y Ángulo de todos
 
 io.on('connection', (socket) => {
     let numJugadores = Object.keys(jugadoresEnSala).length;
@@ -24,7 +23,7 @@ io.on('connection', (socket) => {
     socket.on('cambiar_equipo', (nuevoEquipo) => {
         if(jugadoresEnSala[socket.id]) {
             jugadoresEnSala[socket.id].equipo = nuevoEquipo;
-            io.emit('actualizar_sala', jugadoresEnSala);
+            io.emit('actualizar_sala', jugadoresEnSala); 
         }
     });
 
@@ -33,13 +32,40 @@ io.on('connection', (socket) => {
         io.emit('iniciar_juego_todos'); 
     });
 
+    // === NUEVA MAGIA DE BATALLA ===
+    socket.on('entrar_arena', (datos) => {
+        // Un jugador cargó el mapa, lo registramos en la arena
+        jugadoresEnPartida[socket.id] = datos;
+    });
+
+    socket.on('mover_jugador', (datos) => {
+        // Recibimos la nueva posición y la actualizamos en la nube
+        if(jugadoresEnPartida[socket.id]) {
+            Object.assign(jugadoresEnPartida[socket.id], datos);
+        }
+    });
+
+    socket.on('disparar', (datosBala) => {
+        // Si alguien dispara, le mandamos la bala a TODOS los demás casi a la velocidad de la luz
+        socket.broadcast.emit('bala_enemiga', datosBala);
+    });
+
     socket.on('disconnect', () => {
-        console.log(`🔴 ${jugadoresEnSala[socket.id]?.nombre} abandonó la sala.`);
+        console.log(`🔴 ${jugadoresEnSala[socket.id]?.nombre || 'Alguien'} abandonó la conexión.`);
         delete jugadoresEnSala[socket.id];
-        io.emit('actualizar_sala', jugadoresEnSala);
+        delete jugadoresEnPartida[socket.id];
+        io.emit('actualizar_sala', jugadoresEnSala); 
     });
 });
 
+// === EL LATIDO DEL SERVIDOR ===
+// Esto empuja el mapa a todos los celulares 30 veces por segundo (30 FPS)
+setInterval(() => {
+    if(Object.keys(jugadoresEnPartida).length > 0) {
+        io.emit('tick_servidor', jugadoresEnPartida);
+    }
+}, 1000 / 30);
+
 http.listen(PORT, () => {
-    console.log(`🚀 Servidor Dominion activo en puerto ${PORT}`);
+    console.log(`🚀 Servidor Dominion activo y escuchando en el puerto ${PORT}`);
 });
