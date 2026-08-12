@@ -577,6 +577,28 @@
         socket.on('iniciar_juego_todos', () => {
             window.iniciarPartidaOficial(); 
         });
+
+        // === NUEVOS RECEPTORES MULTIJUGADOR (BATALLA) ===
+        socket.on('tick_servidor', (jugadoresNube) => {
+            if(typeof window.STATE !== 'undefined' && window.STATE.screen === 'playing') {
+                window.STATE.jugadoresNube = jugadoresNube;
+                window.STATE.miSocketId = socket.id; // Para que el juego sepa cuál soy yo y no me duplique
+            }
+        });
+
+        socket.on('bala_enemiga', (b) => {
+            if(typeof window.STATE !== 'undefined' && window.STATE.screen === 'playing') {
+                // Atrapamos la bala de otro jugador y la pintamos en nuestra pantalla
+                window.STATE.bullets.push({
+                    id: ++window.STATE.bulletIdCounter, 
+                    type: b.type || 'normal',
+                    x: b.x, y: b.y, angle: b.angle,
+                    life: b.life, speed: b.speed, size: b.size, damage: b.damage, 
+                    team: b.team, attacker: { isPlayer: false, team: b.team, id: 'nube' }, 
+                    color: b.color 
+                });
+            }
+        });
     </script>
     <!-- ============================== -->
 
@@ -677,12 +699,11 @@
             UI.cerrarModal('modal-dificultad');
         };
 
-        // === CAMBIO AQUÍ: Le avisamos a Termux si quieres cambiar de bando ===
         window.seleccionarBando = function(equipo) {
             window.seleccionActual.bando = equipo;
             
             if(typeof socket !== 'undefined') {
-                socket.emit('cambiar_equipo', equipo); // "¡Termux, ponme en el bando 2!"
+                socket.emit('cambiar_equipo', equipo);
             }
 
             let btnBlue = document.getElementById('btn-team-blue');
