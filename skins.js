@@ -1,13 +1,76 @@
 // ==================================================
-// skins.js - GENERACIÓN PROCEDIMENTAL Y ANIMACIONES
+// skins.js - LECTOR GLB Y GENERACIÓN PROCEDIMENTAL
 // ==================================================
 
 const Skins = {
+    loader: null,
+    animadores: {}, // Aquí se guardan los motores de animación de Mixamo
+
+    // === LA LISTA MÁGICA CON NOMBRES FIJOS ===
+    // Sube tus archivos a GitHub exactamente con estos nombres
+    modelos: {
+        'SOUL-SNIPER': 'tirador.glb',
+        'SHADOWBLADE': 'asesino.glb',
+        'ASH-GUARD': 'tanque.glb',
+        'NATURE-DRUID': 'druida.glb',
+        'ABYSSAL-PIRATE': 'pirata.glb',
+        'STEEL-MERCENARY': 'mercenario.glb',
+        'RAGE-BRAWLER': 'combatiente.glb',
+        'FLAME-MAGE': 'mago.glb'
+    },
+
     init: function() {
         console.log("Skins Procedimentales Inicializadas 🛡️");
+        if (typeof THREE !== 'undefined' && THREE.GLTFLoader) {
+            this.loader = new THREE.GLTFLoader();
+            console.log("Motor de lectura GLB (Modelos 3D Reales) Activado 🚀");
+        }
     },
 
     cargar: function(entidad, group) {
+        let archivoGLB = this.modelos[entidad.class];
+
+        if (archivoGLB && this.loader) {
+            // Intenta leer el archivo GLB
+            this.cargarGLB(entidad, group, archivoGLB);
+        } else {
+            // Falla de seguridad (Si no hay loader, carga los bloques)
+            this.construirBloques(entidad, group);
+        }
+    },
+
+    cargarGLB: function(entidad, group, url) {
+        this.loader.load(url, (gltf) => {
+            let modelo = gltf.scene;
+            
+            // Escala inicial general (La ajustaremos cuando subas el primer modelo)
+            let escala = 15; 
+            modelo.scale.set(escala, escala, escala);
+            modelo.position.y = 0;
+
+            // Encender el motor de animaciones (Si el modelo trae huesos de Mixamo)
+            if (gltf.animations && gltf.animations.length > 0) {
+                let mixer = new THREE.AnimationMixer(modelo);
+                let action = mixer.clipAction(gltf.animations[0]); 
+                action.play(); // Arranca la primera animación por defecto
+                
+                this.animadores[group.uuid] = {
+                    mixer: mixer,
+                    animaciones: gltf.animations
+                };
+            }
+
+            group.userData = { esGLB: true, modelo: modelo };
+            group.add(modelo);
+
+        }, undefined, (error) => {
+            // Si el archivo no existe aún en GitHub, carga los bloques para no romper el juego
+            console.warn("Aviso: No se encontró el archivo " + url + " para " + entidad.class + ". Cargando bloques...");
+            this.construirBloques(entidad, group);
+        });
+    },
+
+    construirBloques: function(entidad, group) {
         let colorPiel = 0xfcd34d; 
         let colorArmadura = entidad.team === 1 ? 0x1e3a8a : 0x7f1d1d; 
         let colorPantalon = 0x111111;
@@ -16,35 +79,19 @@ const Skins = {
         if (entidad.class === 'SHADOWBLADE') colorPiel = 0xef4444; 
         if (entidad.class === 'ASH-GUARD') colorPiel = 0x4ade80;   
         if (entidad.class === 'NATURE-DRUID') {
-            colorPiel = 0xfef08a; 
-            colorArmadura = 0x166534; 
-            colorPantalon = 0x78350f; 
-            colorMagia = 0x4ade80; 
+            colorPiel = 0xfef08a; colorArmadura = 0x166534; colorPantalon = 0x78350f; colorMagia = 0x4ade80; 
         }
         if (entidad.class === 'ABYSSAL-PIRATE') {
-            colorPiel = 0x9ca3af; 
-            colorArmadura = 0x1e293b; 
-            colorPantalon = 0x0f172a; 
-            colorMagia = 0x8b5cf6; 
+            colorPiel = 0x9ca3af; colorArmadura = 0x1e293b; colorPantalon = 0x0f172a; colorMagia = 0x8b5cf6; 
         }
         if (entidad.class === 'STEEL-MERCENARY') {
-            colorPiel = 0x475569; 
-            colorArmadura = 0x334155; 
-            colorPantalon = 0x1e293b; 
-            colorMagia = 0xf97316; 
+            colorPiel = 0x475569; colorArmadura = 0x334155; colorPantalon = 0x1e293b; colorMagia = 0xf97316; 
         }
         if (entidad.class === 'RAGE-BRAWLER') {
-            colorPiel = 0xd97706; 
-            colorArmadura = 0x450a0a; 
-            colorPantalon = 0x1c1917; 
-            colorMagia = 0xff0000; 
+            colorPiel = 0xd97706; colorArmadura = 0x450a0a; colorPantalon = 0x1c1917; colorMagia = 0xff0000; 
         }
-        // === NUEVO: COLORES DEL MAGO DE FUEGO ===
         if (entidad.class === 'FLAME-MAGE') {
-            colorPiel = 0xffe4c4; // Piel clara
-            colorArmadura = 0x991111; // Túnica roja oscura/carmesí
-            colorPantalon = 0x550000; // Pantalones más oscuros
-            colorMagia = 0xff4500; // Fuego naranja/rojo
+            colorPiel = 0xffe4c4; colorArmadura = 0x991111; colorPantalon = 0x550000; colorMagia = 0xff4500; 
         }
 
         const matPiel = new THREE.MeshStandardMaterial({ color: colorPiel, roughness: 0.8 });
@@ -52,7 +99,6 @@ const Skins = {
         const matPantalon = new THREE.MeshStandardMaterial({ color: colorPantalon, roughness: 0.9 });
 
         const heroeGroup = new THREE.Group();
-        
         const cabezaGroup = new THREE.Group(); 
         cabezaGroup.position.y = 3.1; 
         
@@ -66,7 +112,6 @@ const Skins = {
                 let cinta = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.05, 1.2), matParche);
                 cabezaGroup.add(parche, cinta);
             }
-            // === SOMBRERO DE MAGO ===
             if (entidad.class === 'FLAME-MAGE') {
                 let hatMat = new THREE.MeshStandardMaterial({ color: 0x220505 });
                 let hatBase = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 0.9, 0.1, 16), hatMat);
@@ -117,7 +162,6 @@ const Skins = {
 
         heroeGroup.add(cabezaGroup, torso, brazoIzq, brazoDer, piernaIzq, piernaDer);
 
-        // 4. Armería Procedimental
         if (entidad.class === 'SOUL-SNIPER') {
             let bowMat = new THREE.MeshStandardMaterial({ color: 0x5c4033 }); 
             let stringMat = new THREE.MeshBasicMaterial({ color: 0xcccccc }); 
@@ -254,7 +298,6 @@ const Skins = {
             brazoDer.add(guanteDer);
         }
 
-        // 5. Ajustar Escala Global al tamaño del mapa
         let escala = 13;
         if (entidad.class === 'SOUL-SNIPER') escala = 58;
         else if (entidad.class === 'SHADOWBLADE') escala = 52;
@@ -269,6 +312,7 @@ const Skins = {
         group.add(heroeGroup);
 
         group.userData = {
+            esGLB: false,
             heroeGroup: heroeGroup,
             torso: torso,
             brazoIzq: brazoIzq,
@@ -284,113 +328,135 @@ const Skins = {
 
     actualizar: function(delta, estadoGlobal, entidadesVisuales) {
         if (estadoGlobal.player && entidadesVisuales['player']) {
-            this.transicionar(estadoGlobal.player, entidadesVisuales['player']);
+            this.transicionar(estadoGlobal.player, entidadesVisuales['player'], delta);
         }
         estadoGlobal.bots.forEach((bot, index) => {
             if (entidadesVisuales['bot_' + index]) {
-                this.transicionar(bot, entidadesVisuales['bot_' + index]);
+                this.transicionar(bot, entidadesVisuales['bot_' + index], delta);
             }
         });
     },
 
-    transicionar: function(entidad, group) {
-        if (!group.userData || !group.userData.brazoIzq) return;
-        
+    transicionar: function(entidad, group, delta) {
         let u = group.userData;
+        if (!u) return;
+
         let isMoving = (Math.abs(entidad.vx) > 0.1 || Math.abs(entidad.vy) > 0.1);
         let isAiming = entidad.aimingAtk;
         let frameGolpe = entidad.showAtk || 0; 
         let isDead = entidad.hp <= 0;
 
-        if (isDead) {
-            u.heroeGroup.rotation.x = -Math.PI / 2;
-            u.heroeGroup.position.y = -5; 
-            return;
-        } else {
-            u.heroeGroup.rotation.x = 0;
-            u.heroeGroup.position.y = 0;
-        }
-
-        if (entidad.active && entidad.class === 'SHADOWBLADE') {
-            u.matPiel.opacity = 0.2; u.matTraje.opacity = 0.2; u.matPantalon.opacity = 0.2;
-        } else {
-            u.matPiel.opacity = 1; u.matTraje.opacity = 1; u.matPantalon.opacity = 1;
-        }
-
-        if (entidad.furyTimer && entidad.furyTimer > 0) {
-            u.frameAnimacion += isMoving ? 0.4 : 0.15;
-        } else if (entidad.mageBuffTimer && entidad.mageBuffTimer > 0) {
-            u.frameAnimacion += isMoving ? 0.35 : 0.1;
-        } else {
-            u.frameAnimacion += isMoving ? 0.25 : 0.05; 
-        }
-
-        let oscilacion = Math.sin(u.frameAnimacion) * 0.8;
-        
-        u.piernaIzq.rotation.x = isMoving ? oscilacion : 0;
-        u.piernaDer.rotation.x = isMoving ? -oscilacion : 0;
-        
-        if (entidad.class === 'ABYSSAL-PIRATE' && isMoving) {
-            u.heroeGroup.position.y = Math.sin(u.frameAnimacion * 2) * 2;
-        } else {
-            u.torso.scale.y = isMoving ? 1 : 1 + Math.sin(u.frameAnimacion) * 0.03;
-        }
-
-        // Posturas de los brazos
-        if (frameGolpe > 0) {
-            if (entidad.class === 'SOUL-SNIPER') {
-                u.brazoIzq.rotation.x = -Math.PI/2 - 0.2; 
-                u.brazoDer.rotation.x = 0; 
-            } else if (entidad.class === 'SHADOWBLADE' || entidad.class === 'ABYSSAL-PIRATE') {
-                u.brazoDer.rotation.x = Math.PI/6; 
-                u.brazoDer.rotation.z = Math.PI/8;
-            } else if (entidad.class === 'ASH-GUARD' || entidad.class === 'STEEL-MERCENARY') {
-                u.brazoDer.rotation.x = Math.PI/4; 
-                u.brazoIzq.rotation.x = -0.2; 
-                u.brazoIzq.rotation.z = -0.3;
-            } else if (entidad.class === 'NATURE-DRUID' || entidad.class === 'FLAME-MAGE') {
-                u.brazoDer.rotation.x = Math.PI/4; 
-                u.brazoIzq.rotation.x = -0.3;
-            } else if (entidad.class === 'RAGE-BRAWLER') {
-                u.brazoDer.rotation.x = Math.PI/2 - 0.2; 
-                u.brazoIzq.rotation.x = Math.PI/2 - 0.5;
+        // ============================================
+        // LÓGICA SI ES UN MODELO 3D (.GLB)
+        // ============================================
+        if (u.esGLB) {
+            if (isDead) {
+                u.modelo.rotation.x = -Math.PI / 2;
+                u.modelo.position.y = -5; 
+            } else {
+                u.modelo.rotation.x = 0;
+                u.modelo.position.y = 0;
             }
-        } else if (isAiming) {
-            if (entidad.class === 'SOUL-SNIPER') {
-                u.brazoIzq.rotation.x = -Math.PI/2; 
-                u.brazoDer.rotation.x = -Math.PI/2 + 0.4; 
-                u.brazoIzq.rotation.z = 0; u.brazoDer.rotation.z = 0;
-            } else if (entidad.class === 'SHADOWBLADE' || entidad.class === 'ABYSSAL-PIRATE') {
-                u.brazoDer.rotation.x = -Math.PI/2 + 0.2; 
-                u.brazoIzq.rotation.x = 0;
-                u.brazoDer.rotation.z = 0;
-            } else if (entidad.class === 'ASH-GUARD' || entidad.class === 'STEEL-MERCENARY') {
-                u.brazoIzq.rotation.x = -0.2; 
-                u.brazoIzq.rotation.z = -0.3; 
-                u.brazoDer.rotation.x = -Math.PI/2 + 0.6; 
-                u.brazoDer.rotation.z = 0;
-            } else if (entidad.class === 'NATURE-DRUID' || entidad.class === 'FLAME-MAGE') {
-                u.brazoDer.rotation.x = -Math.PI/2 + 0.3; 
-                u.brazoIzq.rotation.x = 0;
-                u.brazoDer.rotation.z = 0;
-            } else if (entidad.class === 'RAGE-BRAWLER') {
-                u.brazoIzq.rotation.x = -0.3; 
-                u.brazoIzq.rotation.z = -0.1; 
-                u.brazoDer.rotation.x = -Math.PI/2 + 0.4; 
-                u.brazoDer.rotation.z = 0;
+
+            // Actualizar la línea de tiempo de la animación
+            if (this.animadores[group.uuid]) {
+                this.animadores[group.uuid].mixer.update(delta);
             }
-        } else {
-            u.brazoIzq.rotation.x = isMoving ? -oscilacion : 0;
-            u.brazoDer.rotation.x = isMoving ? oscilacion : 0;
-            u.brazoIzq.rotation.z = 0; u.brazoDer.rotation.z = 0;
             
-            if ((entidad.class === 'ASH-GUARD' || entidad.class === 'STEEL-MERCENARY') && !isAiming) {
-                u.brazoIzq.rotation.x = isMoving ? (-oscilacion * 0.5) - 0.1 : -0.1; 
-                u.brazoIzq.rotation.z = -0.1;
+            // Modo Fantasma del Asesino (Shadowblade)
+            if (entidad.active && entidad.class === 'SHADOWBLADE') {
+                u.modelo.traverse((child) => {
+                    if (child.isMesh && child.material) {
+                        child.material.transparent = true;
+                        child.material.opacity = 0.2;
+                    }
+                });
+            } else if (entidad.class === 'SHADOWBLADE') {
+                 u.modelo.traverse((child) => {
+                    if (child.isMesh && child.material) {
+                        child.material.transparent = false;
+                        child.material.opacity = 1.0;
+                    }
+                });
             }
-            if (entidad.class === 'RAGE-BRAWLER' && !isAiming) {
-                u.brazoIzq.rotation.x = isMoving ? -oscilacion : -0.2; 
-                u.brazoDer.rotation.x = isMoving ? oscilacion : -0.2; 
+
+        // ============================================
+        // LÓGICA SI SON LOS BLOQUES CLÁSICOS
+        // ============================================
+        } else {
+            if (!u.brazoIzq) return;
+
+            if (isDead) {
+                u.heroeGroup.rotation.x = -Math.PI / 2;
+                u.heroeGroup.position.y = -5; 
+                return;
+            } else {
+                u.heroeGroup.rotation.x = 0;
+                u.heroeGroup.position.y = 0;
+            }
+
+            if (entidad.active && entidad.class === 'SHADOWBLADE') {
+                u.matPiel.opacity = 0.2; u.matTraje.opacity = 0.2; u.matPantalon.opacity = 0.2;
+            } else {
+                u.matPiel.opacity = 1; u.matTraje.opacity = 1; u.matPantalon.opacity = 1;
+            }
+
+            if (entidad.furyTimer && entidad.furyTimer > 0) {
+                u.frameAnimacion += isMoving ? 0.4 : 0.15;
+            } else if (entidad.mageBuffTimer && entidad.mageBuffTimer > 0) {
+                u.frameAnimacion += isMoving ? 0.35 : 0.1;
+            } else {
+                u.frameAnimacion += isMoving ? 0.25 : 0.05; 
+            }
+
+            let oscilacion = Math.sin(u.frameAnimacion) * 0.8;
+            
+            u.piernaIzq.rotation.x = isMoving ? oscilacion : 0;
+            u.piernaDer.rotation.x = isMoving ? -oscilacion : 0;
+            
+            if (entidad.class === 'ABYSSAL-PIRATE' && isMoving) {
+                u.heroeGroup.position.y = Math.sin(u.frameAnimacion * 2) * 2;
+            } else {
+                u.torso.scale.y = isMoving ? 1 : 1 + Math.sin(u.frameAnimacion) * 0.03;
+            }
+
+            if (frameGolpe > 0) {
+                if (entidad.class === 'SOUL-SNIPER') {
+                    u.brazoIzq.rotation.x = -Math.PI/2 - 0.2; 
+                    u.brazoDer.rotation.x = 0; 
+                } else if (entidad.class === 'SHADOWBLADE' || entidad.class === 'ABYSSAL-PIRATE') {
+                    u.brazoDer.rotation.x = Math.PI/6; u.brazoDer.rotation.z = Math.PI/8;
+                } else if (entidad.class === 'ASH-GUARD' || entidad.class === 'STEEL-MERCENARY') {
+                    u.brazoDer.rotation.x = Math.PI/4; u.brazoIzq.rotation.x = -0.2; u.brazoIzq.rotation.z = -0.3;
+                } else if (entidad.class === 'NATURE-DRUID' || entidad.class === 'FLAME-MAGE') {
+                    u.brazoDer.rotation.x = Math.PI/4; u.brazoIzq.rotation.x = -0.3;
+                } else if (entidad.class === 'RAGE-BRAWLER') {
+                    u.brazoDer.rotation.x = Math.PI/2 - 0.2; u.brazoIzq.rotation.x = Math.PI/2 - 0.5;
+                }
+            } else if (isAiming) {
+                if (entidad.class === 'SOUL-SNIPER') {
+                    u.brazoIzq.rotation.x = -Math.PI/2; u.brazoDer.rotation.x = -Math.PI/2 + 0.4; 
+                    u.brazoIzq.rotation.z = 0; u.brazoDer.rotation.z = 0;
+                } else if (entidad.class === 'SHADOWBLADE' || entidad.class === 'ABYSSAL-PIRATE') {
+                    u.brazoDer.rotation.x = -Math.PI/2 + 0.2; u.brazoIzq.rotation.x = 0; u.brazoDer.rotation.z = 0;
+                } else if (entidad.class === 'ASH-GUARD' || entidad.class === 'STEEL-MERCENARY') {
+                    u.brazoIzq.rotation.x = -0.2; u.brazoIzq.rotation.z = -0.3; u.brazoDer.rotation.x = -Math.PI/2 + 0.6; u.brazoDer.rotation.z = 0;
+                } else if (entidad.class === 'NATURE-DRUID' || entidad.class === 'FLAME-MAGE') {
+                    u.brazoDer.rotation.x = -Math.PI/2 + 0.3; u.brazoIzq.rotation.x = 0; u.brazoDer.rotation.z = 0;
+                } else if (entidad.class === 'RAGE-BRAWLER') {
+                    u.brazoIzq.rotation.x = -0.3; u.brazoIzq.rotation.z = -0.1; u.brazoDer.rotation.x = -Math.PI/2 + 0.4; u.brazoDer.rotation.z = 0;
+                }
+            } else {
+                u.brazoIzq.rotation.x = isMoving ? -oscilacion : 0;
+                u.brazoDer.rotation.x = isMoving ? oscilacion : 0;
+                u.brazoIzq.rotation.z = 0; u.brazoDer.rotation.z = 0;
+                
+                if ((entidad.class === 'ASH-GUARD' || entidad.class === 'STEEL-MERCENARY') && !isAiming) {
+                    u.brazoIzq.rotation.x = isMoving ? (-oscilacion * 0.5) - 0.1 : -0.1; u.brazoIzq.rotation.z = -0.1;
+                }
+                if (entidad.class === 'RAGE-BRAWLER' && !isAiming) {
+                    u.brazoIzq.rotation.x = isMoving ? -oscilacion : -0.2; u.brazoDer.rotation.x = isMoving ? oscilacion : -0.2; 
+                }
             }
         }
     }
