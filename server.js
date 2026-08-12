@@ -6,7 +6,9 @@ const io = require('socket.io')(http, { cors: { origin: "*" } });
 
 // En Render, el puerto lo da el sistema automático. 
 const PORT = process.env.PORT || 3000;
-app.use(express.static(path.join(__dirname, '../dominion of beta 5')));
+
+// ¡AQUÍ ESTÁ LA CORRECCIÓN! Le decimos a Render que busque los archivos en esta misma carpeta
+app.use(express.static(__dirname));
 
 let jugadoresEnSala = {};
 let jugadoresEnPartida = {}; // Aquí guardaremos X, Y, Vida y Ángulo de todos
