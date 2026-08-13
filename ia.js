@@ -11,11 +11,14 @@ const IA = {
         let eTeam = pTeam === 1 ? 2 : 1; 
         
         // --- CONFIGURACIÓN DEL EQUIPO ENEMIGO (3 BOTS) ---
+        // FÁCIL: Tank (Guard), Asesino (Shadowblade), Tirador (Soul-Sniper)
         let classesEnemigas = ['ASH-GUARD', 'SHADOWBLADE', 'SOUL-SNIPER']; 
         
         if (estadoGlobal.dificultad === 'medio') {
-            classesEnemigas = ['ASH-GUARD', 'FLAME-MAGE', 'STEEL-MERCENARY']; 
+            // MEDIO: Tirador, Druida, Guard
+            classesEnemigas = ['SOUL-SNIPER', 'NATURE-DRUID', 'ASH-GUARD']; 
         } else if (estadoGlobal.dificultad === 'hades') {
+            // HADES: Combatiente, Mago de Fuego, Mercenario
             classesEnemigas = ['RAGE-BRAWLER', 'FLAME-MAGE', 'STEEL-MERCENARY']; 
         }
         
@@ -106,6 +109,11 @@ const IA = {
         
         estadoGlobal.bots.forEach(bot => {
             
+            // === MAGIA MULTIJUGADOR: RESPETO ABSOLUTO ===
+            // Si este "bot" tiene la etiqueta de ser un jugador real de internet, 
+            // la IA se lava las manos y no lo mueve ni lo ataca, ¡respeta a los humanos!
+            if (bot.isNetworkPlayer) return;
+
             if (estadoGlobal.isTutorial) {
                 bot.vx = 0; bot.vy = 0; bot.aimingAtk = false; 
                 return;
@@ -138,7 +146,7 @@ const IA = {
             bot.speed = bot.baseSpeed;
             if (bot.speedBuffTimer > 0) bot.speed *= 1.25;
             if (bot.furyTimer > 0) bot.speed *= 1.15;
-            if (bot.mageBuffTimer > 0) bot.speed *= 1.15; // === VELOCIDAD DEL MAGO ===
+            if (bot.mageBuffTimer > 0) bot.speed *= 1.15;
             if (bot.slowTimer > 0) bot.speed *= 0.35; 
             if (bot.purifyTimer > 0) bot.speed *= 1.3;
 
@@ -333,11 +341,9 @@ const IA = {
                         }
                     }
                 }
-                // === NUEVA IA PARA EL MAGO DE FUEGO ===
                 else if (bot.class === 'FLAME-MAGE') {
                     if (bot.target && bot.target.hp) {
                         let dx = bot.target.x - bot.x, dy = bot.target.y - bot.y;
-                        // Si está peleando de cerca o media distancia, lanza la bola de fuego
                         if (dx*dx + dy*dy <= 500 * 500) {
                             Habilidades.executeSkill(bot, estadoGlobal); 
                         }
