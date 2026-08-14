@@ -1,73 +1,82 @@
+// ==================================================
+// server.js - BACKEND Y MULTIJUGADOR (Optimizado)
+// ==================================================
 const express = require('express');
 const app = express();
 const http = require('http').createServer(app);
-const path = require('path');
-const io = require('socket.io')(http, { cors: { origin: "*" } });
 
-// En Render, el puerto lo da el sistema automático. 
-const PORT = process.env.PORT || 3000;
+// Configuración de red con protección Anti-Fantasmas
+const io = require('socket.io')(http, {
+    cors: { origin: "*" },
+    pingTimeout: 10000,   // Si no responde en 10 seg, lo desconecta
+    pingInterval: 5000    // Revisa la conexión cada 5 seg
+});
 
-// ¡AQUÍ ESTÁ LA CORRECCIÓN! Le decimos a Render que busque los archivos en esta misma carpeta
-app.use(express.static(__dirname));
+// Puerto asignado por Render (obligatorio)
+const PORT = process.env.PORT || 3000; 
 
 let jugadoresEnSala = {};
-let jugadoresEnPartida = {}; // Aquí guardaremos X, Y, Vida y Ángulo de todos
 
 io.on('connection', (socket) => {
-    let numJugadores = Object.keys(jugadoresEnSala).length;
-    let nombreJugador = numJugadores === 0 ? "CERO (Host)" : "Jugador " + (numJugadores + 1);
-    
-    jugadoresEnSala[socket.id] = { nombre: nombreJugador, equipo: 1 };
-    console.log(`🟢 ${nombreJugador} entró a la sala.`);
-    
-    io.emit('actualizar_sala', jugadoresEnSala);
+    console.log(`🟢 Guerrero conectado: ${socket.id}`);
 
-    socket.on('cambiar_equipo', (nuevoEquipo) => {
-        if(jugadoresEnSala[socket.id]) {
-            jugadoresEnSala[socket.id].equipo = nuevoEquipo;
-            io.emit('actualizar_sala', jugadoresEnSala); 
+    // === LOBBY ===
+    socket.on('unirse_sala', (datos) => {
+        jugadoresEnSala[socket.id] = { ...datos, id: socket.id, listo: false };
+        io.emit('actualizar_sala', jugadoresEnSala);
+    });
+
+    socket.on('cambiar_equipo', (equipo) => {
+        if (jugadoresEnSala[socket.id]) {
+            jugadoresEnSala[socket.id].equipo = equipo;
+            io.emit('actualizar_sala', jugadoresEnSala);
         }
     });
 
-    socket.on('arrancar_partida', () => {
-        console.log('🔥 ¡El líder dio la orden! Arrancando...');
-        io.emit('iniciar_juego_todos'); 
+    socket.on('jugador_listo', (estado) => {
+        if (jugadoresEnSala[socket.id]) {
+            jugadoresEnSala[socket.id].listo = estado;
+            io.emit('actualizar_sala', jugadoresEnSala);
+            
+            let arrayJugadores = Object.values(jugadoresEnSala);
+            let todosListos = arrayJugadores.length > 0 && arrayJugadores.every(j => j.listo);
+            
+            // Arranca solo si hay más de 1 jugador y TODOS están listos
+            if (todosListos && arrayJugadores.length > 1) {
+                io.emit('iniciar_partida_multijugador');
+            }
+        }
     });
 
-    // === NUEVA MAGIA DE BATALLA ===
+    // === COMBATE ===
     socket.on('entrar_arena', (datos) => {
-        // Un jugador cargó el mapa, lo registramos en la arena
-        jugadoresEnPartida[socket.id] = datos;
+        if (jugadoresEnSala[socket.id]) {
+            jugadoresEnSala[socket.id] = { ...jugadoresEnSala[socket.id], ...datos };
+            socket.broadcast.emit('nuevo_jugador_arena', jugadoresEnSala[socket.id]);
+        }
     });
 
     socket.on('mover_jugador', (datos) => {
-        // Recibimos la nueva posición y la actualizamos en la nube
-        if(jugadoresEnPartida[socket.id]) {
-            Object.assign(jugadoresEnPartida[socket.id], datos);
-        }
+        socket.broadcast.emit('movimiento_enemigo', { id: socket.id, ...datos });
     });
 
-    socket.on('disparar', (datosBala) => {
-        // Si alguien dispara, le mandamos la bala a TODOS los demás casi a la velocidad de la luz
-        socket.broadcast.emit('bala_enemiga', datosBala);
+    socket.on('disparar', (datos) => {
+        socket.broadcast.emit('disparo_enemigo', { id: socket.id, ...datos });
     });
 
+    socket.on('registrar_impacto', (datos) => {
+        io.emit('actualizar_vida', datos);
+    });
+
+    // === DESCONEXIÓN ===
     socket.on('disconnect', () => {
-        console.log(`🔴 ${jugadoresEnSala[socket.id]?.nombre || 'Alguien'} abandonó la conexión.`);
+        console.log(`🔴 Guerrero desconectado: ${socket.id}`);
         delete jugadoresEnSala[socket.id];
-        delete jugadoresEnPartida[socket.id];
-        io.emit('actualizar_sala', jugadoresEnSala); 
+        io.emit('actualizar_sala', jugadoresEnSala);
+        io.emit('jugador_desconectado', socket.id);
     });
 });
 
-// === EL LATIDO DEL SERVIDOR ===
-// Esto empuja el mapa a todos los celulares 30 veces por segundo (30 FPS)
-setInterval(() => {
-    if(Object.keys(jugadoresEnPartida).length > 0) {
-        io.emit('tick_servidor', jugadoresEnPartida);
-    }
-}, 1000 / 30);
-
 http.listen(PORT, () => {
-    console.log(`🚀 Servidor Dominion activo y escuchando en el puerto ${PORT}`);
+    console.log(`🚀 Servidor Dominion operando en el puerto ${PORT}`);
 });
