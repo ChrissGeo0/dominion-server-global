@@ -3,7 +3,7 @@
 // ==================================================
 
 const AudioEngine = {
-    bgmMatch: null,     
+    bgmMapas: [],     
     bgmLobby: null,     
     sfxPool: {},        
     volMusica: 0.4,     
@@ -13,8 +13,13 @@ const AudioEngine = {
     currentTrack: null, 
 
     init: function() {
-        this.bgmMatch = new Audio('audiomapa.mp3'); 
-        this.bgmMatch.loop = true;
+        // === INYECCIÓN: LOS 3 AUDIOS TEMÁTICOS ===
+        this.bgmMapas[1] = new Audio('audio1.mp3'); 
+        this.bgmMapas[1].loop = true;
+        this.bgmMapas[2] = new Audio('audio2.mp3'); 
+        this.bgmMapas[2].loop = true;
+        this.bgmMapas[3] = new Audio('audio3.mp3'); 
+        this.bgmMapas[3].loop = true;
         
         this.bgmLobby = new Audio('audiolobby.mp3'); 
         this.bgmLobby.loop = true;
@@ -23,7 +28,6 @@ const AudioEngine = {
         this.sfxPool['ataque-SOUL-SNIPER'] = new Audio('flecha.mp3');
         this.sfxPool['ataque-SHADOWBLADE'] = new Audio('cuchilla.mp3');
         this.sfxPool['ataque-ASH-GUARD'] = new Audio('mazo.mp3');
-        // === BUG FIX: SONIDO DE LA DRUIDA REGISTRADO ===
         this.sfxPool['ataque-NATURE-DRUID'] = new Audio('magia.mp3');
         
         // Sonidos del entorno
@@ -35,18 +39,25 @@ const AudioEngine = {
             if (this.desbloqueado) return;
             
             // Muteamos solo la música para el desbloqueo silencioso
-            this.bgmMatch.volume = 0; 
+            this.bgmMapas[1].volume = 0; 
+            this.bgmMapas[2].volume = 0; 
+            this.bgmMapas[3].volume = 0; 
             this.bgmLobby.volume = 0;
             
-            let p1 = this.bgmMatch.play().catch(e => {});
-            let p2 = this.bgmLobby.play().catch(e => {});
+            let p1 = this.bgmMapas[1].play().catch(e => {});
+            let p2 = this.bgmMapas[2].play().catch(e => {});
+            let p3 = this.bgmMapas[3].play().catch(e => {});
+            let p4 = this.bgmLobby.play().catch(e => {});
             
-            // Solo exigimos que las pistas de música respondan para desbloquear el motor
-            Promise.all([p1, p2]).then(() => {
-                this.bgmMatch.pause(); this.bgmMatch.currentTime = 0;
+            Promise.all([p1, p2, p3, p4]).then(() => {
+                this.bgmMapas[1].pause(); this.bgmMapas[1].currentTime = 0;
+                this.bgmMapas[2].pause(); this.bgmMapas[2].currentTime = 0;
+                this.bgmMapas[3].pause(); this.bgmMapas[3].currentTime = 0;
                 this.bgmLobby.pause(); this.bgmLobby.currentTime = 0;
                 
-                this.bgmMatch.volume = this.volMusica; 
+                this.bgmMapas[1].volume = this.volMusica; 
+                this.bgmMapas[2].volume = this.volMusica; 
+                this.bgmMapas[3].volume = this.volMusica; 
                 this.bgmLobby.volume = this.volMusica; 
                 this.desbloqueado = true;
                 
@@ -79,7 +90,9 @@ const AudioEngine = {
     },
 
     stopAllMusic: function() {
-        if (this.bgmMatch) { this.bgmMatch.pause(); this.bgmMatch.currentTime = 0; }
+        if (this.bgmMapas[1]) { this.bgmMapas[1].pause(); this.bgmMapas[1].currentTime = 0; }
+        if (this.bgmMapas[2]) { this.bgmMapas[2].pause(); this.bgmMapas[2].currentTime = 0; }
+        if (this.bgmMapas[3]) { this.bgmMapas[3].pause(); this.bgmMapas[3].currentTime = 0; }
         if (this.bgmLobby) { this.bgmLobby.pause(); this.bgmLobby.currentTime = 0; }
         this.currentTrack = null;
     },
@@ -91,7 +104,7 @@ const AudioEngine = {
         sonidoCopia.volume = volumenPersonalizado !== null ? volumenPersonalizado : this.volEfectos;
         
         sonidoCopia.play().catch(e => {
-            // Si falta algún archivo de mp3 de arma, no rompe el juego, solo lo ignora silenciosamente
+            // Ignora silenciosamente si falta algún sonido
         });
         
         sonidoCopia.onended = function() {
@@ -101,7 +114,9 @@ const AudioEngine = {
 
     setVolumeMusica: function(valor) {
         this.volMusica = valor;
-        if (this.bgmMatch) this.bgmMatch.volume = this.volMusica;
+        if (this.bgmMapas[1]) this.bgmMapas[1].volume = this.volMusica;
+        if (this.bgmMapas[2]) this.bgmMapas[2].volume = this.volMusica;
+        if (this.bgmMapas[3]) this.bgmMapas[3].volume = this.volMusica;
         if (this.bgmLobby) this.bgmLobby.volume = this.volMusica;
     },
 
@@ -121,13 +136,18 @@ const AudioEngine = {
 window.addEventListener('load', () => {
     AudioEngine.init();
 
-    // 1. INICIAR MÚSICA PARTIDA
+    // 1. INICIAR MÚSICA PARTIDA (DINÁMICA POR MAPA)
     if (typeof UI !== 'undefined' && UI.updateHUD) {
         const originalUpdateHUD = UI.updateHUD;
         UI.updateHUD = function(estadoGlobal) {
             if (estadoGlobal && estadoGlobal.screen === 'playing') {
-                if (AudioEngine.currentTrack !== AudioEngine.bgmMatch && AudioEngine.desbloqueado) {
-                    AudioEngine.playTrack(AudioEngine.bgmMatch);
+                
+                // Lee qué número de audio dictó el generador de mapas
+                let numAudio = estadoGlobal.audioActual || 1;
+                let trackCorrecto = AudioEngine.bgmMapas[numAudio];
+
+                if (AudioEngine.currentTrack !== trackCorrecto && AudioEngine.desbloqueado) {
+                    AudioEngine.playTrack(trackCorrecto);
                 }
             }
             originalUpdateHUD.apply(this, arguments);
