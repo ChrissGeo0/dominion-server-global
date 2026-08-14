@@ -1,6 +1,11 @@
+// ==================================================
+// server.js - BACKEND Y MULTIJUGADOR (Modo Pruebas)
+// ==================================================
 const express = require('express');
 const app = express();
 const http = require('http').createServer(app);
+
+// Configuración de red
 const io = require('socket.io')(http, {
     cors: { origin: "*" },
     pingTimeout: 10000,
@@ -8,11 +13,13 @@ const io = require('socket.io')(http, {
 });
 
 const PORT = process.env.PORT || 3000; 
+
 let jugadoresEnSala = {};
 
 io.on('connection', (socket) => {
     console.log(`🟢 Guerrero conectado: ${socket.id}`);
 
+    // === LOBBY ===
     socket.on('unirse_sala', (datos) => {
         jugadoresEnSala[socket.id] = { ...datos, id: socket.id, listo: false };
         io.emit('actualizar_sala', jugadoresEnSala);
@@ -29,14 +36,18 @@ io.on('connection', (socket) => {
         if (jugadoresEnSala[socket.id]) {
             jugadoresEnSala[socket.id].listo = estado;
             io.emit('actualizar_sala', jugadoresEnSala);
+            
             let arrayJugadores = Object.values(jugadoresEnSala);
             let todosListos = arrayJugadores.length > 0 && arrayJugadores.every(j => j.listo);
-            if (todosListos && arrayJugadores.length > 1) {
+            
+            // 🔥 SOLUCIÓN: Permite iniciar la partida aunque estés tú solo probando (>= 1)
+            if (todosListos && arrayJugadores.length >= 1) {
                 io.emit('iniciar_partida_multijugador');
             }
         }
     });
 
+    // === COMBATE ===
     socket.on('entrar_arena', (datos) => {
         if (jugadoresEnSala[socket.id]) {
             jugadoresEnSala[socket.id] = { ...jugadoresEnSala[socket.id], ...datos };
@@ -56,11 +67,15 @@ io.on('connection', (socket) => {
         io.emit('actualizar_vida', datos);
     });
 
+    // === DESCONEXIÓN ===
     socket.on('disconnect', () => {
+        console.log(`🔴 Guerrero desconectado: ${socket.id}`);
         delete jugadoresEnSala[socket.id];
         io.emit('actualizar_sala', jugadoresEnSala);
         io.emit('jugador_desconectado', socket.id);
     });
 });
 
-http.listen(PORT, () => console.log(`🚀 Servidor Dominion en puerto ${PORT}`));
+http.listen(PORT, () => {
+    console.log(`🚀 Servidor Dominion operando en el puerto ${PORT}`);
+});
