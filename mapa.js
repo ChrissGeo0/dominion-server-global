@@ -37,7 +37,8 @@ const WORLD = {
         {x: 1600, y: 500, w: 50, h: 50}
     ],
 
-    walls: [
+    // === PLANTILLA 1: TU MAPA ORIGINAL HECHO A MANO (Hades, Varka, Spartan) ===
+    plantilla1: [
         {x: 0, y: 0, w: 3650, h: 50, hidden: false},
         {x: 0, y: 3600, w: 3650, h: 50, hidden: false},
         {x: 0, y: 0, w: 50, h: 3650, hidden: false},
@@ -357,5 +358,37 @@ const WORLD = {
         {x: 2200, y: 2250, w: 50, h: 50, hidden: false},{x: 2200, y: 2200, w: 50, h: 50, hidden: false},
         {x: 2150, y: 2200, w: 50, h: 50, hidden: false},{x: 2100, y: 2200, w: 50, h: 50, hidden: false},
         {x: 1500, y: 2100, w: 50, h: 50, hidden: false},{x: 1500, y: 2050, w: 50, h: 50, hidden: false}
-    ]
+    ],
+
+    // === PLANTILLA 2: MAPA ABIERTO (EN BLANCO PARA EL FUTURO) ===
+    plantilla2: [
+        {x: 0, y: 0, w: 3650, h: 50, hidden: false},
+        {x: 0, y: 3600, w: 3650, h: 50, hidden: false},
+        {x: 0, y: 0, w: 50, h: 3650, hidden: false},
+        {x: 3600, y: 0, w: 50, h: 3650, hidden: false}
+    ],
+
+    // === PLANTILLA 3: LABERINTO CERRADO (EN BLANCO PARA EL FUTURO) ===
+    plantilla3: [
+        {x: 0, y: 0, w: 3650, h: 50, hidden: false},
+        {x: 0, y: 3600, w: 3650, h: 50, hidden: false},
+        {x: 0, y: 0, w: 50, h: 3650, hidden: false},
+        {x: 3600, y: 0, w: 50, h: 3650, hidden: false}
+    ],
+
+    walls: [],
+
+    cargarMuros: function(numPlantilla) {
+        if (numPlantilla === 1) this.walls = [...this.plantilla1];
+        else if (numPlantilla === 2) this.walls = [...this.plantilla2];
+        else if (numPlantilla === 3) this.walls = [...this.plantilla3];
+        
+        // Re-calculamos colisiones automáticamente si ya inició el juego
+        if (typeof Colisiones !== 'undefined' && Colisiones.cells) {
+            Colisiones.init();
+        }
+    }
 };
+
+// Cargamos tu plantilla 1 por defecto al arrancar la app
+WORLD.cargarMuros(1);
