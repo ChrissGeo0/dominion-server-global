@@ -1,4 +1,38 @@
 // ==================================================
+// SISTEMA_MAPAS - GENERADOR ALEATORIO DE ESCENARIOS
+// ==================================================
+const SISTEMA_MAPAS = {
+    regiones: {
+        'HADES':   { archivo: 'Arenahades.png', plantilla: 1, audio: 1 },
+        'VARKA':   { archivo: 'Varkan.png',     plantilla: 1, audio: 1 },
+        'SPARTAN': { archivo: 'Spartan.png',    plantilla: 1, audio: 1 },
+        'KRAKEN':  { archivo: 'Kraken.png',     plantilla: 2, audio: 2 },
+        'AUREN':   { archivo: 'Auren.png',      plantilla: 2, audio: 2 },
+        'PARKLES': { archivo: 'Parkles.png',    plantilla: 2, audio: 2 },
+        'SUN':     { archivo: 'Sun.png',        plantilla: 3, audio: 3 },
+        'TORMUN':  { archivo: 'Tormun.png',     plantilla: 3, audio: 3 },
+        'NUCLEO':  { archivo: 'Nucleo.png',     plantilla: 3, audio: 3 }
+    },
+    inicializar: function(estadoGlobal) {
+        const nombres = Object.keys(this.regiones);
+        const elegida = nombres[Math.floor(Math.random() * nombres.length)];
+        const conf = this.regiones[elegida];
+
+        estadoGlobal.regionActual = elegida;
+        estadoGlobal.plantillaActual = conf.plantilla;
+        estadoGlobal.audioActual = conf.audio;
+        estadoGlobal.fondoActual = conf.archivo;
+        
+        // Sincroniza la matriz física de colisiones
+        if (typeof WORLD !== 'undefined' && WORLD.cargarMuros) {
+            WORLD.cargarMuros(conf.plantilla);
+        }
+        
+        console.log(`⚔️ Destino: ${elegida} | Audio: ${conf.audio} | Plantilla: ${conf.plantilla} | Fondo: ${conf.archivo}`);
+    }
+};
+
+// ==================================================
 // game.js - CEREBRO, BUCLE Y ESTADO DEL JUEGO
 // ==================================================
 
@@ -7,12 +41,12 @@ const Game = {
     loadingInterval: null,
     
     init: function() {
-        if(typeof UI !== 'undefined') UI.init(); 
-        if(typeof Controles !== 'undefined') Controles.init(); 
+        if (typeof UI !== 'undefined') UI.init(); 
+        if (typeof Controles !== 'undefined') Controles.init(); 
         const canvas = document.getElementById('gameCanvas');
-        if(typeof Motor3D !== 'undefined') Motor3D.init(canvas); 
-        if(typeof Colisiones !== 'undefined') Colisiones.init();
-        if(typeof Cliente !== 'undefined') Cliente.init();
+        if (typeof Motor3D !== 'undefined') Motor3D.init(canvas); 
+        if (typeof Colisiones !== 'undefined') Colisiones.init();
+        if (typeof Cliente !== 'undefined') Cliente.init();
     },
     
     setTeam: function(teamId) {
@@ -31,10 +65,12 @@ const Game = {
     },
     
     showLoadingScreen: function(role, callback) {
-        document.getElementById('classic-client').style.display = 'none';
+        const classicClient = document.getElementById('classic-client');
+        if (classicClient) classicClient.style.display = 'none';
+        
         const loadingScreen = document.getElementById('loading-screen');
         const loadingBar = document.getElementById('loading-bar');
-        if(loadingScreen) loadingScreen.style.display = 'flex';
+        if (loadingScreen) loadingScreen.style.display = 'flex';
         
         if (loadingBar) {
             if (role === 'IA') { 
@@ -50,19 +86,19 @@ const Game = {
         if (this.loadingInterval) clearInterval(this.loadingInterval);
         
         this.loadingInterval = setInterval(() => {
-            progress += Math.random() * 15;
+            progress += Math.random() * 18;
             if (progress >= 100) {
                 progress = 100; 
-                if(loadingBar) loadingBar.style.width = '100%'; 
+                if (loadingBar) loadingBar.style.width = '100%'; 
                 clearInterval(this.loadingInterval);
                 setTimeout(() => { 
-                    if(loadingScreen) loadingScreen.style.display = 'none'; 
+                    if (loadingScreen) loadingScreen.style.display = 'none'; 
                     callback(); 
-                }, 600);
+                }, 400);
             } else { 
-                if(loadingBar) loadingBar.style.width = progress + '%'; 
+                if (loadingBar) loadingBar.style.width = progress + '%'; 
             }
-        }, 150);
+        }, 120);
     },
     
     initTutorial: function() {
@@ -93,7 +129,7 @@ const Game = {
             p.poisonTimer = 0; p.furyTimer = 0; 
             p.mageBuffTimer = 0; p.teleportTimer = 0; 
 
-            p.x = p.team === 1 ? 1825 : 1825; 
+            p.x = 1825; 
             p.y = p.team === 1 ? 300 : 3350; 
             
             p.deadTimer = 0; p.active = false; p.activeTimer = 0; p.radarTimer = 0; 
@@ -106,13 +142,15 @@ const Game = {
             STATE.effects = []; STATE.trampas = []; STATE.ballestas = []; STATE.cameraShake = 0; STATE.hitStopTimer = 0; 
             STATE.bulletIdCounter = 0; STATE.effectIdCounter = 0; STATE.isTutorial = isTutorial;
             
-            if(typeof WORLD !== 'undefined' && WORLD.trees) WORLD.trees.forEach(t => t.active = true);
-            if(typeof IA !== 'undefined') IA.init(false, STATE); 
-            if(typeof WORLD !== 'undefined' && WORLD.turrets) WORLD.turrets.forEach(t => { t.progress = 0; t.team = 0; });
-            if(typeof WORLD !== 'undefined' && WORLD.pickups) WORLD.pickups.forEach(p => { p.active = true; p.respawnTimer = 0; }); 
+            // Inyección del generador aleatorio
+            SISTEMA_MAPAS.inicializar(STATE);
+
+            if (typeof WORLD !== 'undefined' && WORLD.trees) WORLD.trees.forEach(t => t.active = true);
+            if (typeof IA !== 'undefined') IA.init(false, STATE); 
+            if (typeof WORLD !== 'undefined' && WORLD.turrets) WORLD.turrets.forEach(t => { t.progress = 0; t.team = 0; });
+            if (typeof WORLD !== 'undefined' && WORLD.pickups) WORLD.pickups.forEach(pick => { pick.active = true; pick.respawnTimer = 0; }); 
             
-            // === MAGIA MULTIJUGADOR: AVISAR QUE ENTRAMOS AL MAPA ===
-            if (typeof socket !== 'undefined' && !isTutorial) {
+            if (typeof socket !== 'undefined' && socket && !isTutorial) {
                 socket.emit('entrar_arena', {
                     x: p.x, y: p.y, hp: p.hp, maxHp: p.maxHp, mp: p.mp, maxMp: p.maxMp,
                     class: p.class, team: p.team, lastAngle: p.lastAngle
@@ -127,17 +165,17 @@ const Game = {
             if (isTutorial && typeof Tutorial !== 'undefined') {
                 Tutorial.init();
             } else {
-                if(typeof Tutorial !== 'undefined') Tutorial.active = false;
-                if(typeof UI !== 'undefined' && UI.hideRadio) UI.hideRadio();
+                if (typeof Tutorial !== 'undefined') Tutorial.active = false;
+                if (typeof UI !== 'undefined' && UI.hideRadio) UI.hideRadio();
                 let atkStick = document.getElementById('atk-stick');
                 let skillStick = document.getElementById('skill-stick');
                 let recallBtn = document.getElementById('recall-btn');
                 let stick2 = document.getElementById('skill-stick-2');
 
-                if(atkStick) { atkStick.style.opacity = '1'; atkStick.style.pointerEvents = 'auto'; }
-                if(skillStick) { skillStick.style.opacity = '1'; skillStick.style.pointerEvents = 'auto'; }
-                if(recallBtn) { recallBtn.style.opacity = '1'; recallBtn.style.pointerEvents = 'auto'; }
-                if(stick2) { stick2.style.opacity = '1'; stick2.style.pointerEvents = 'auto'; }
+                if (atkStick) { atkStick.style.opacity = '1'; atkStick.style.pointerEvents = 'auto'; }
+                if (skillStick) { skillStick.style.opacity = '1'; skillStick.style.pointerEvents = 'auto'; }
+                if (recallBtn) { recallBtn.style.opacity = '1'; recallBtn.style.pointerEvents = 'auto'; }
+                if (stick2) { stick2.style.opacity = '1'; stick2.style.pointerEvents = 'auto'; }
             }
             if (STATE.animationFrameId) cancelAnimationFrame(STATE.animationFrameId);
             this.tick();
@@ -154,19 +192,21 @@ const Game = {
             STATE.stats = { blue: { turretFrames: 0, pointsLostToTurrets: 0, pointsLostToDeaths: 0 }, red: { turretFrames: 0, pointsLostToTurrets: 0, pointsLostToDeaths: 0 } };
             STATE.isTutorial = false;
             
-            if(typeof Tutorial !== 'undefined') Tutorial.active = false;
-            if(typeof WORLD !== 'undefined' && WORLD.trees) WORLD.trees.forEach(t => t.active = true);
-            if(typeof WORLD !== 'undefined' && WORLD.turrets) WORLD.turrets.forEach(t => { t.progress = 0; t.team = 0; });
-            if(typeof WORLD !== 'undefined' && WORLD.pickups) WORLD.pickups.forEach(p => { p.active = true; p.respawnTimer = 0; });
+            SISTEMA_MAPAS.inicializar(STATE);
+
+            if (typeof Tutorial !== 'undefined') Tutorial.active = false;
+            if (typeof WORLD !== 'undefined' && WORLD.trees) WORLD.trees.forEach(t => t.active = true);
+            if (typeof WORLD !== 'undefined' && WORLD.turrets) WORLD.turrets.forEach(t => { t.progress = 0; t.team = 0; });
+            if (typeof WORLD !== 'undefined' && WORLD.pickups) WORLD.pickups.forEach(pick => { pick.active = true; pick.respawnTimer = 0; });
             
             let p = STATE.player; 
             p.hp = 0; p.maxHp = 100; p.x = -1000; p.y = -1000; p.deadTimer = 9999999; p.active = false; 
-            if(typeof IA !== 'undefined') IA.init(true, STATE);
+            if (typeof IA !== 'undefined') IA.init(true, STATE);
             
             let simScreen = document.getElementById('simulation-screen');
             let simConsole = document.getElementById('sim-console');
-            if(simScreen) simScreen.style.display = 'flex'; 
-            if(simConsole) simConsole.innerHTML = '<div style="color:#0f0;">[SISTEMA] INICIANDO SIMULACIÓN DE IA...</div>';
+            if (simScreen) simScreen.style.display = 'flex'; 
+            if (simConsole) simConsole.innerHTML = '<div style="color:#0f0;">[SISTEMA] INICIANDO SIMULACIÓN DE IA...</div>';
             
             if (STATE.animationFrameId) cancelAnimationFrame(STATE.animationFrameId);
             this.tick();
@@ -177,8 +217,8 @@ const Game = {
         STATE.screen = 'lobby'; 
         let simScreen = document.getElementById('simulation-screen');
         let classicClient = document.getElementById('classic-client');
-        if(simScreen) simScreen.style.display = 'none'; 
-        if(classicClient) classicClient.style.display = 'flex'; 
+        if (simScreen) simScreen.style.display = 'none'; 
+        if (classicClient) classicClient.style.display = 'flex'; 
     },
     
     endMatch: function() {
@@ -194,8 +234,8 @@ const Game = {
         }
         document.querySelectorAll('.hud-element').forEach(el => el.style.display = 'none'); 
         let simScreen = document.getElementById('simulation-screen');
-        if(simScreen) simScreen.style.display = 'none'; 
-        if(typeof UI !== 'undefined' && UI.hideRadio) UI.hideRadio();
+        if (simScreen) simScreen.style.display = 'none'; 
+        if (typeof UI !== 'undefined' && UI.hideRadio) UI.hideRadio();
         
         if (STATE.mode === 'playing' && !STATE.isTutorial && typeof Perfil !== 'undefined') {
             let p = STATE.player;
@@ -220,9 +260,10 @@ const Game = {
                     torretas: p.turretsCaptured || 0,
                     victoria: isVictory,
                     mvp: isMvp,
-                    clase: p.class 
+                    clase: p.class,
+                    equipo: p.team 
                 });
-            } catch(e) { console.warn("Aviso:", e); }
+            } catch(e) { console.warn("Aviso Perfil:", e); }
         }
 
         this.proceedToStats();
@@ -262,8 +303,8 @@ const Game = {
     returnToLobby: function() { 
         let goScreen = document.getElementById('game-over-screen');
         let classicClient = document.getElementById('classic-client');
-        if(goScreen) goScreen.style.display = 'none'; 
-        if(classicClient) classicClient.style.display = 'flex'; 
+        if (goScreen) goScreen.style.display = 'none'; 
+        if (classicClient) classicClient.style.display = 'flex'; 
         STATE.screen = 'lobby'; STATE.bullets = []; STATE.bots = []; STATE.effects = []; STATE.trampas = []; STATE.ballestas = [];
     },
     
@@ -314,7 +355,7 @@ const Game = {
             p.inTree = false; p.currentTree = null;
             if (typeof WORLD !== 'undefined' && WORLD.trees) {
                 let tCount = WORLD.trees.length;
-                for(let i=0; i < tCount; i++) {
+                for (let i = 0; i < tCount; i++) {
                     let t = WORLD.trees[i];
                     if (t.active) {
                         let dx = p.x - t.x; let dy = p.y - t.y;
@@ -340,10 +381,10 @@ const Game = {
             
             if (p.aimingSkill2 && p.skillOverrideTimer === 0) { 
                 let rangoTal = 0;
-                if(p.skill2Type === 'gancho') rangoTal = 700;
-                if(p.skill2Type === 'stun') rangoTal = 600;
-                if(p.skill2Type === 'hielo') rangoTal = 700; 
-                if(p.skill2Type === 'teleport') rangoTal = 1300; 
+                if (p.skill2Type === 'gancho') rangoTal = 700;
+                if (p.skill2Type === 'stun') rangoTal = 600;
+                if (p.skill2Type === 'hielo') rangoTal = 700; 
+                if (p.skill2Type === 'teleport') rangoTal = 1300; 
                 
                 if (p.autoAimingSkill2 && p.skill2Type !== 'teleport') {
                     let enemiesTal = (typeof IA !== 'undefined' && rangoTal > 0) ? IA.obtenerEnemigosEnRango(p, rangoTal, STATE) : [];
@@ -383,24 +424,41 @@ const Game = {
             
             p.hasTarget = enemiesInCone.length > 0;
             
+            // ⚔️ SISTEMA DE COMBATE CONECTADO AL MULTIJUGADOR 
             if (p.aimingAtk && p.hasTarget && !p.cancelAtk) { 
                 if (Date.now() - p.lastAtk > p.atkSpeed && typeof Habilidades !== 'undefined') {
-                    Habilidades.executeAttack(p, enemiesInCone[0], dStats, STATE); 
+                    let objetivoPrincipal = enemiesInCone[0];
+                    Habilidades.executeAttack(p, objetivoPrincipal, dStats, STATE); 
+
+                    // 🌐 RED: Avisar al servidor que disparamos
+                    if (typeof socket !== 'undefined' && socket && !STATE.isTutorial) {
+                        socket.emit('disparar', {
+                            x: p.x, y: p.y, angle: p.lastAngle,
+                            speed: 35, damage: dStats.normalDamage || 20, range: dStats.range,
+                            team: p.team, color: p.team === 1 ? 0x00ffff : 0xff3333, size: 1
+                        });
+
+                        // Si el objetivo es un jugador real en línea, le restamos vida
+                        if (objetivoPrincipal && objetivoPrincipal.isNetworkPlayer) {
+                            let idVictimaReal = objetivoPrincipal.id.replace('net_', '');
+                            socket.emit('registrar_impacto', { victimaId: idVictimaReal, daño: dStats.normalDamage || 20 });
+                        }
+                    }
                 }
             }
 
             if (!p.aimingSkill2 && p.wasAimingSkill2) {
                 if (!p.cancelAtk && p.skill2Cd <= 0) {
                     let rangoTalento = 0;
-                    if(p.skill2Type === 'gancho') { rangoTalento = 700; p.skill2MaxCd = 780; }
-                    if(p.skill2Type === 'stun') { rangoTalento = 600; p.skill2MaxCd = 780; }
-                    if(p.skill2Type === 'hielo') { rangoTalento = 700; p.skill2MaxCd = 780; }
-                    if(p.skill2Type === 'purificar') { rangoTalento = 50; p.skill2MaxCd = 780; } 
-                    if(p.skill2Type === 'teleport') { rangoTalento = 1300; p.skill2MaxCd = 900; }
+                    if (p.skill2Type === 'gancho') { rangoTalento = 700; p.skill2MaxCd = 780; }
+                    if (p.skill2Type === 'stun') { rangoTalento = 600; p.skill2MaxCd = 780; }
+                    if (p.skill2Type === 'hielo') { rangoTalento = 700; p.skill2MaxCd = 780; }
+                    if (p.skill2Type === 'purificar') { rangoTalento = 50; p.skill2MaxCd = 780; } 
+                    if (p.skill2Type === 'teleport') { rangoTalento = 1300; p.skill2MaxCd = 900; }
                     
                     if (rangoTalento > 0) {
                         p.skill2Cd = p.skill2MaxCd;
-                        if(typeof Habilidades !== 'undefined') Habilidades.executeSkill2(p, STATE);
+                        if (typeof Habilidades !== 'undefined') Habilidades.executeSkill2(p, STATE);
                         p.skillOverrideTimer = 15;
                     }
                 }
@@ -425,8 +483,8 @@ const Game = {
             p.recalling = false; p.active = false; p.radarTimer = 0; p.inTree = false; p.currentTree = null;
             p.furyTimer = 0; p.mageBuffTimer = 0; p.shield = 0; p.teleportTimer = 0;
             
-            let mK = document.getElementById('move-knob'); if(mK) mK.style.transform = `translate(-50%, -50%)`;
-            let aK = document.getElementById('atk-knob'); if(aK) aK.style.transform = `translate(-50%, -50%)`;
+            let mK = document.getElementById('move-knob'); if (mK) mK.style.transform = `translate(-50%, -50%)`;
+            let aK = document.getElementById('atk-knob'); if (aK) aK.style.transform = `translate(-50%, -50%)`;
         } else if (STATE.mode !== 'simulation' && --p.deadTimer <= 0) { 
             p.hp = p.maxHp; p.mp = p.maxMp; p.deadTimer = 0; p.aimingAtk = false; p.chargeTimer = 0; 
             p.isHyperReady = false; p.hasTarget = false; p.shield = 0; p.speedBuffTimer = 0; p.poisonTimer = 0; p.teleportTimer = 0;
@@ -457,18 +515,16 @@ const Game = {
             });
         }
         
-        // === OCULTAMOS LOS JUGADORES DE RED A LA IA PARA QUE NO LOS CONTROLE ===
         let botsOriginales = [];
         if (STATE.bots) {
             botsOriginales = STATE.bots.filter(b => !b.isNetworkPlayer);
         }
         STATE.bots = botsOriginales;
 
-        if(typeof IA !== 'undefined') IA.update(STATE); 
+        if (typeof IA !== 'undefined') IA.update(STATE); 
         
-        // === MAGIA MULTIJUGADOR: INYECTAMOS A TUS AMIGOS EN EL MAPA ===
-        if (STATE.mode === 'playing' && !STATE.isTutorial && typeof socket !== 'undefined') {
-            if (STATE.matchFrames % 2 === 0) { // 30 veces por segundo
+        if (STATE.mode === 'playing' && !STATE.isTutorial && typeof socket !== 'undefined' && socket) {
+            if (STATE.matchFrames % 2 === 0) { 
                 socket.emit('mover_jugador', {
                     x: p.x, y: p.y, hp: p.hp, maxHp: p.maxHp, mp: p.mp, maxMp: p.maxMp,
                     lastAngle: p.lastAngle, class: p.class, team: p.team,
@@ -494,14 +550,13 @@ const Game = {
                         });
                     }
                 }
-                // Añadimos a tus amigos reales al mapa para que puedas verlos y golpearlos
                 STATE.bots = STATE.bots.concat(networkBots);
             }
         }
 
-        if(typeof Colisiones !== 'undefined') Colisiones.update(STATE); 
-        if(typeof Habilidades !== 'undefined') Habilidades.updateEnvironment(STATE); 
-        if(typeof Proyectiles !== 'undefined') Proyectiles.update(STATE);
+        if (typeof Colisiones !== 'undefined') Colisiones.update(STATE); 
+        if (typeof Habilidades !== 'undefined') Habilidades.updateEnvironment(STATE); 
+        if (typeof Proyectiles !== 'undefined') Proyectiles.update(STATE);
         
         if (STATE.isTutorial && typeof Tutorial !== 'undefined') { 
             Tutorial.update(p, STATE); 
@@ -525,40 +580,40 @@ const Game = {
         let atkText = document.getElementById('atk-cd-text');
         
         if (atkTime > 0) {
-            if(atkBg) atkBg.style.display = 'block';
-            if(atkText) { 
+            if (atkBg) atkBg.style.display = 'block';
+            if (atkText) { 
                 atkText.style.display = 'block'; 
                 atkText.innerText = (atkTime / 1000).toFixed(1); 
             }
         } else {
-            if(atkBg) atkBg.style.display = 'none';
-            if(atkText) atkText.style.display = 'none';
+            if (atkBg) atkBg.style.display = 'none';
+            if (atkText) atkText.style.display = 'none';
         }
 
         let s1Bg = document.getElementById('skill-cd-bg');
         let s1Text = document.getElementById('skill-cd-text');
         if (p.cd > 0) {
-            if(s1Bg) s1Bg.style.display = 'block';
-            if(s1Text) { 
+            if (s1Bg) s1Bg.style.display = 'block';
+            if (s1Text) { 
                 s1Text.style.display = 'block'; 
                 s1Text.innerText = Math.ceil(p.cd / 60); 
             }
         } else {
-            if(s1Bg) s1Bg.style.display = 'none';
-            if(s1Text) s1Text.style.display = 'none';
+            if (s1Bg) s1Bg.style.display = 'none';
+            if (s1Text) s1Text.style.display = 'none';
         }
 
         let s2Bg = document.getElementById('talento-cd-bg');
         let s2Text = document.getElementById('talento-cd-text');
         if (p.skill2Cd > 0) {
-            if(s2Bg) s2Bg.style.display = 'block';
-            if(s2Text) { 
+            if (s2Bg) s2Bg.style.display = 'block';
+            if (s2Text) { 
                 s2Text.style.display = 'block'; 
                 s2Text.innerText = Math.ceil(p.skill2Cd / 60); 
             }
         } else {
-            if(s2Bg) s2Bg.style.display = 'none';
-            if(s2Text) s2Text.style.display = 'none';
+            if (s2Bg) s2Bg.style.display = 'none';
+            if (s2Text) s2Text.style.display = 'none';
         }
     },
 
@@ -566,12 +621,12 @@ const Game = {
         if (STATE.screen === 'playing') {
             if (STATE.hitStopTimer > 0) { 
                 STATE.hitStopTimer--; 
-                if(typeof Motor3D !== 'undefined') Motor3D.update(STATE); 
+                if (typeof Motor3D !== 'undefined') Motor3D.update(STATE); 
             } else { 
                 this.updateLogic(); 
-                if(typeof Motor3D !== 'undefined') Motor3D.update(STATE); 
+                if (typeof Motor3D !== 'undefined') Motor3D.update(STATE); 
             }
-            if(typeof UI !== 'undefined') UI.updateHUD(STATE); 
+            if (typeof UI !== 'undefined') UI.updateHUD(STATE); 
             this.updateCooldownsUI(); 
         } else if (STATE.screen === 'simulation') {
             for (let i = 0; i < 5; i++) { 
@@ -583,7 +638,7 @@ const Game = {
                 consoleEl.innerHTML += `<div>[${new Date().toLocaleTimeString()}] NEXO AZUL ${Math.floor(Math.max(0, STATE.nexusBlue))} | NEXO ROJO ${Math.floor(Math.max(0, STATE.nexusRed))}</div>`; 
                 consoleEl.scrollTop = consoleEl.scrollHeight; 
             }
-            if(typeof UI !== 'undefined') UI.drawMinimap(STATE);
+            if (typeof UI !== 'undefined') UI.drawMinimap(STATE);
         }
         STATE.animationFrameId = requestAnimationFrame(() => this.tick());
     }
