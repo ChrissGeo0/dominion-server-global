@@ -12,12 +12,19 @@ const MotorMundo = {
         this.entidadesVisuales = entidadesRef;
         
         const geometriaSuelo = new THREE.PlaneGeometry(3650, 3650);
-        const texturaSuelo = new THREE.TextureLoader().load('Arena.png');
+        
+        // === INYECCIÓN LORE: CARGA INICIAL POR DEFECTO ===
+        const texturaSuelo = new THREE.TextureLoader().load('Arena.png'); // Fallback seguro
         const materialSuelo = new THREE.MeshLambertMaterial({ map: texturaSuelo, color: 0xffffff }); 
         const suelo = new THREE.Mesh(geometriaSuelo, materialSuelo);
         suelo.rotation.x = -Math.PI / 2; 
         suelo.position.set(3650 / 2, 0, 3650 / 2); 
+        
+        // Guardamos el suelo para cambiar su textura más adelante
+        suelo.userData = { fondoActual: 'Arena.png' };
         this.scene.add(suelo);
+        this.entidadesVisuales['suelo_arena'] = suelo;
+        // =================================================
         
         this.crearMuros(); 
         this.crearTorretas(); 
@@ -227,6 +234,25 @@ const MotorMundo = {
     },
     
     actualizar: function(estadoGlobal, motorRef) {
+        
+        // === INYECCIÓN LORE: ACTUALIZAR TEXTURA DEL SUELO ===
+        let sueloArena = this.entidadesVisuales['suelo_arena'];
+        if (sueloArena && estadoGlobal.fondoActual) {
+            // Si el generador pide un fondo distinto al que tiene el suelo cargado actualmente
+            if (sueloArena.userData.fondoActual !== estadoGlobal.fondoActual) {
+                sueloArena.userData.fondoActual = estadoGlobal.fondoActual;
+                
+                // Cargamos la nueva imagen y la aplicamos al vuelo sin congelar el juego
+                new THREE.TextureLoader().load(estadoGlobal.fondoActual, function(texturaNueva) {
+                    sueloArena.material.map = texturaNueva;
+                    sueloArena.material.needsUpdate = true;
+                }, undefined, function(err) {
+                    console.warn("Falta la imagen " + estadoGlobal.fondoActual + ". Ignorando y usando la anterior.");
+                });
+            }
+        }
+        // =====================================================
+
         if (estadoGlobal.player && estadoGlobal.player.hp > 0) {
             let playerMesh = this.entidadesVisuales['player'];
             if (!playerMesh) playerMesh = this.crearMeshPersonaje(estadoGlobal.player, 'player');
@@ -403,7 +429,6 @@ const MotorMundo = {
             
             visorGroup.visible = estadoGlobal.player.aimingAtk;
 
-            // === VISOR DE TALENTOS ===
             let visorTalentoId = 'visor_talento'; let visorTalentoGroup = this.entidadesVisuales[visorTalentoId];
             if (!visorTalentoGroup) {
                 visorTalentoGroup = new THREE.Group(); 
@@ -434,7 +459,6 @@ const MotorMundo = {
                 if(estadoGlobal.player.skill2Type === 'stun') { talentoColor = 0xffaa00; rangoTalento = 600; }
                 if(estadoGlobal.player.skill2Type === 'hielo') { talentoColor = 0x00ffff; rangoTalento = 700; radioImpacto = 180; }
                 if(estadoGlobal.player.skill2Type === 'purificar') { talentoColor = 0xffffff; rangoTalento = 50; } 
-                // === FIX VISUAL TELEPORT: RANGO REAL Y SIMULACIÓN DE MUROS ===
                 if(estadoGlobal.player.skill2Type === 'teleport') { talentoColor = 0xd946ef; rangoTalento = 1000; radioImpacto = estadoGlobal.player.radius + 5; } 
                 
                 let imp = visorTalentoGroup.children.find(c => c.name === "timpact");
