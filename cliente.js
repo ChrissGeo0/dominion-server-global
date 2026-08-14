@@ -15,12 +15,15 @@ const Cliente = {
                 reconnectionDelay: 2000         
             });
 
+            // 🔥 CORRECCIÓN: Conectamos el control remoto global AQUÍ ADENTRO
+            window.socket = this.socket;
+
             this.socket.on('connect', () => {
                 console.log('🌐 Satélite conectado al núcleo de Dominion');
                 this.conectado = true;
                 if (typeof STATE !== 'undefined') STATE.miSocketId = this.socket.id;
                 
-                // 🔥 EL TOQUE MÁGICO: Le gritamos al servidor que acabamos de entrar al lobby
+                // Aquí es donde mandamos tu nombre real al servidor al entrar
                 let equipoElegido = (window.seleccionActual && window.seleccionActual.bando) ? window.seleccionActual.bando : 1;
                 this.socket.emit('unirse_sala', { nombre: 'CERO', equipo: equipoElegido });
                 
@@ -103,5 +106,3 @@ const Cliente = {
         }
     }
 };
-
-window.socket = Cliente.socket; 
