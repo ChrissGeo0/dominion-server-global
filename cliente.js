@@ -7,14 +7,12 @@ const Cliente = {
 
     init: function() {
         try {
-            // 🔥 CONEXIÓN GLOBAL AL SERVIDOR DE RENDER CON RECONEXIÓN AUTOMÁTICA
             const SERVER_URL = "https://dominion-server-3dhx.onrender.com"; 
             
-            // Inyectamos los parámetros de reconexión para redes móviles inestables
             this.socket = io(SERVER_URL, {
-                reconnection: true,             // Activa la reconexión automática
-                reconnectionAttempts: 10,       // Intenta reconectar hasta 10 veces
-                reconnectionDelay: 2000         // Espera 2 segundos entre intentos
+                reconnection: true,             
+                reconnectionAttempts: 10,       
+                reconnectionDelay: 2000         
             });
 
             this.socket.on('connect', () => {
@@ -22,17 +20,18 @@ const Cliente = {
                 this.conectado = true;
                 if (typeof STATE !== 'undefined') STATE.miSocketId = this.socket.id;
                 
-                // Ocultar mensaje de reconexión si existiera en la interfaz
+                // 🔥 EL TOQUE MÁGICO: Le gritamos al servidor que acabamos de entrar al lobby
+                let equipoElegido = (window.seleccionActual && window.seleccionActual.bando) ? window.seleccionActual.bando : 1;
+                this.socket.emit('unirse_sala', { nombre: 'CERO', equipo: equipoElegido });
+                
                 let uiAviso = document.getElementById('aviso-desconexion');
                 if(uiAviso) uiAviso.style.display = 'none';
             });
 
-            // === MANEJO DE CAÍDAS DE RED (WIFI/DATOS) ===
             this.socket.on('disconnect', (razon) => {
                 console.warn('⚠️ Conexión perdida:', razon);
                 this.conectado = false;
                 
-                // Si estamos a mitad de partida, podemos mostrar un aviso visual (opcional)
                 if (typeof STATE !== 'undefined' && STATE.screen === 'playing') {
                     let uiAviso = document.getElementById('aviso-desconexion');
                     if(uiAviso) {
@@ -51,7 +50,7 @@ const Cliente = {
 
             this.socket.on('iniciar_partida_multijugador', () => {
                 if (typeof Game !== 'undefined') {
-                    Game.initMatch(STATE.player.class, false);
+                    Game.initMatch(window.seleccionActual.clase, false);
                 }
             });
 
@@ -84,9 +83,7 @@ const Cliente = {
                 }
             });
 
-            // ⚔️ ÁRBITRO DE DAÑO MULTIJUGADOR
             this.socket.on('actualizar_vida', (datos) => {
-                // Si el servidor dice que YO recibí un golpe
                 if (datos.victimaId === this.socket.id && typeof STATE !== 'undefined' && STATE.player.hp > 0) {
                     STATE.player.hp -= datos.daño;
                     if (typeof UI !== 'undefined' && UI.showDamage) {
@@ -107,5 +104,4 @@ const Cliente = {
     }
 };
 
-// Exponemos el socket de forma global para que game.js pueda enviar datos
 window.socket = Cliente.socket; 
