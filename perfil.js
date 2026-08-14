@@ -5,6 +5,7 @@
 const Perfil = {
     data: {
         bajas: 0, muertes: 0, torretas: 0, mvp: 0, partidasJugadas: 0, victorias: 0,
+        invHades: 0, defResistencia: 0,
         danoCausado: 0, danoRecibido: 0,
         picksSniper: 0, picksShadow: 0, picksGuard: 0, picksDruida: 0, picksPirata: 0, picksMercenario: 0, picksBrawler: 0, picksMago: 0,
         historial: [], 
@@ -16,7 +17,6 @@ const Perfil = {
             'ABYSSAL-PIRATE':{ bajas: 0, muertes: 0, mvp: 0, victorias: 0, partidas: 0, danoCausado: 0, danoRecibido: 0 },
             'STEEL-MERCENARY':{ bajas: 0, muertes: 0, mvp: 0, victorias: 0, partidas: 0, danoCausado: 0, danoRecibido: 0 },
             'RAGE-BRAWLER':{ bajas: 0, muertes: 0, mvp: 0, victorias: 0, partidas: 0, danoCausado: 0, danoRecibido: 0 },
-            // === NUEVO: REGISTRO DEL MAGO DE FUEGO ===
             'FLAME-MAGE':{ bajas: 0, muertes: 0, mvp: 0, victorias: 0, partidas: 0, danoCausado: 0, danoRecibido: 0 }
         }
     },
@@ -42,6 +42,9 @@ const Perfil = {
                         this.data[k] = parsed[k];
                     }
                 });
+
+                if (parsed.invHades === undefined) this.data.invHades = 0;
+                if (parsed.defResistencia === undefined) this.data.defResistencia = 0;
 
                 if (parsed.heroes) {
                     Object.keys(parsed.heroes).forEach(h => {
@@ -74,22 +77,55 @@ const Perfil = {
         let elMuertes = document.getElementById('perfil-muertes');
         let elTorretas = document.getElementById('perfil-torretas');
         let elMVP = document.getElementById('perfil-mvp');
+        
         let elJugadas = document.getElementById('perfil-jugadas');
         let elVictorias = document.getElementById('perfil-victorias');
         let elWinRate = document.getElementById('perfil-winrate');
+        
         let elDmgCausado = document.getElementById('perfil-dmg-causado');
         let elDmgRecibido = document.getElementById('perfil-dmg-recibido');
-        
-        let winRateCalc = this.data.partidasJugadas > 0 ? (this.data.victorias / this.data.partidasJugadas) * 100 : 0;
 
         if (elBajas) elBajas.innerText = this.data.bajas;
         if (elMuertes) elMuertes.innerText = this.data.muertes;
         if (elTorretas) elTorretas.innerText = this.data.torretas;
         if (elMVP) elMVP.innerText = this.data.mvp;
-        if (elJugadas) elJugadas.innerText = this.data.partidasJugadas;
-        if (elVictorias) elVictorias.innerText = this.data.victorias;
-        if (elWinRate) elWinRate.innerText = winRateCalc.toFixed(1) + "%"; 
         
+        // === INYECCIÓN LORE: HADES VS RESISTENCIA ===
+        if (elJugadas) {
+            elJugadas.innerText = this.data.invHades || 0;
+            elJugadas.style.color = "#ff3333";
+            elJugadas.style.textShadow = "0 0 10px #ff3333";
+        }
+        
+        if (elVictorias) {
+            elVictorias.innerText = this.data.defResistencia || 0;
+            elVictorias.style.color = "#33ccff";
+            elVictorias.style.textShadow = "0 0 10px #33ccff";
+        }
+
+        if (elWinRate) elWinRate.innerText = ''; // Dejamos el porcentaje en blanco
+
+        // RASTREADOR DOM: ELIMINA EL WIN RATE Y CAMBIA TEXTOS
+        document.querySelectorAll('*').forEach(el => {
+            if (el.childNodes.length === 1 && el.nodeType === 1) {
+                let texto = el.innerText.trim();
+                if (texto === 'JUGADAS') {
+                    el.innerText = 'INV. HADES';
+                    el.style.color = '#ff3333';
+                    el.style.textShadow = '0 0 8px #ff3333';
+                }
+                if (texto === 'VICTORIAS') {
+                    el.innerText = 'DEFENSAS';
+                    el.style.color = '#33ccff';
+                    el.style.textShadow = '0 0 8px #33ccff';
+                }
+                if (texto === 'WIN RATE') {
+                    el.innerText = ''; // Desaparece la etiqueta de Win Rate
+                }
+            }
+        });
+        // ============================================
+
         const formatDmg = (d) => d > 999 ? (d/1000).toFixed(1) + 'k' : Math.floor(d);
         
         if (elDmgCausado) elDmgCausado.innerText = formatDmg(this.data.danoCausado);
@@ -136,7 +172,15 @@ const Perfil = {
         this.data.danoRecibido += (stats.dañoRecibido || 0);
         this.data.partidasJugadas += 1;
         
-        if (stats.victoria) this.data.victorias += 1;
+        if (stats.victoria) {
+            this.data.victorias += 1;
+            if (stats.equipo === 2) {
+                this.data.invHades = (this.data.invHades || 0) + 1;
+            } else {
+                this.data.defResistencia = (this.data.defResistencia || 0) + 1;
+            }
+        }
+        
         if (stats.mvp) this.data.mvp += 1;
         
         if (stats.clase === 'SOUL-SNIPER') this.data.picksSniper += 1;
@@ -163,6 +207,7 @@ const Perfil = {
         let record = {
             clase: stats.clase,
             victoria: stats.victoria,
+            equipo: stats.equipo,
             mvp: stats.mvp,
             kills: stats.kills || 0,
             deaths: stats.deaths || 0,
@@ -194,6 +239,7 @@ const Perfil = {
             'RAGE-BRAWLER': '🥊 COMBATIENTE', 'FLAME-MAGE': '🔥 MAGO'
         };
 
+        // El Win Rate individual del héroe sí lo dejamos (para que sepa cuál domina mejor)
         let wr = h.partidas > 0 ? ((h.victorias / h.partidas) * 100).toFixed(1) : 0;
         let avgDmgCausado = h.partidas > 0 ? Math.floor(h.danoCausado / h.partidas) : 0;
         let avgDmgRecibido = h.partidas > 0 ? Math.floor(h.danoRecibido / h.partidas) : 0;
@@ -236,9 +282,11 @@ const Perfil = {
             };
 
             this.data.historial.forEach(p => {
-                let colorBorde = p.victoria ? '#00ffaa' : '#ff3333';
-                let colorTexto = p.victoria ? '#00ffaa' : '#ff3333';
-                let textoRes = p.victoria ? 'VICTORIA' : 'DERROTA';
+                let esHades = p.equipo === 2;
+                let colorBorde = p.victoria ? (esHades ? '#ff3333' : '#33ccff') : '#555';
+                let colorTexto = p.victoria ? (esHades ? '#ff3333' : '#33ccff') : '#888';
+                let textoRes = p.victoria ? (esHades ? 'INVASIÓN ÉXITO' : 'DEFENSA ÉXITO') : 'MISIÓN FALLIDA';
+                
                 let mvpBadge = p.mvp ? '<span style="background:#facc15; color:#000; padding:2px 5px; border-radius:4px; font-size:9px; font-weight:900; margin-left:8px; box-shadow: 0 0 5px #facc15;">MVP</span>' : '';
                 
                 let row = document.createElement('div');
@@ -247,7 +295,7 @@ const Perfil = {
                 row.innerHTML = `
                     <div style="display: flex; flex-direction: column; width: 45%;">
                         <div style="display: flex; align-items: center;">
-                            <span style="color: ${colorTexto}; font-weight: 900; font-size: 14px; text-shadow: 0 0 8px ${colorTexto};">${textoRes}</span>
+                            <span style="color: ${colorTexto}; font-weight: 900; font-size: 13px; text-shadow: 0 0 8px ${colorTexto};">${textoRes}</span>
                             ${mvpBadge}
                         </div>
                         <span style="color: #888; font-size: 10px; margin-top: 5px; font-weight: bold;">${p.fecha}</span>
