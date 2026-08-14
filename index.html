@@ -155,7 +155,7 @@
         </div>
 
         <div id="caja-39" class="tab-jugar-box" style="display: flex; align-items: center; justify-content: center;">
-            <button class="role-btn" onclick="socket.emit('arrancar_partida')" style="width: 100%; height: 100%; font-size: 14px; font-weight: bold; background: rgba(56, 189, 248, 0.15); border-color: #38bdf8; color: #38bdf8; text-shadow: 0 0 5px #38bdf8; box-shadow: inset 0 0 10px rgba(56, 189, 248, 0.4); cursor: pointer; transition: 0.2s;">ENTRAR 🚀</button>
+            <button class="role-btn" onclick="if(window.socket) { window.socket.emit('jugador_listo', true); this.innerText='ESPERANDO JUGADORES...'; }" style="width: 100%; height: 100%; font-size: 14px; font-weight: bold; background: rgba(56, 189, 248, 0.15); border-color: #38bdf8; color: #38bdf8; text-shadow: 0 0 5px #38bdf8; box-shadow: inset 0 0 10px rgba(56, 189, 248, 0.4); cursor: pointer; transition: 0.2s;">ENTRAR 🚀</button>
         </div>
 
         <div id="caja-10"></div> <div id="caja-26"></div> <div id="caja-27"></div> 
@@ -520,90 +520,10 @@
 
     <div id="recall-btn" class="stick-container hud-element"><div id="recall-knob" class="stick-knob"><span class="knob-label" style="color: yellow;">BASE</span></div></div>     
     
-    <!-- === LA MAGIA ESTÁ AQUÍ === -->
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-    <script>
-        const socket = io();
-
-        // Escuchamos a Termux: Nos manda la lista y nosotros pintamos la sala
-        socket.on('actualizar_sala', (jugadores) => {
-            // 1. Borramos todo visualmente para dejarlo en blanco
-            for(let i=1; i<=3; i++) {
-                let slotA = document.getElementById('sala-azul-'+i);
-                slotA.innerText = i + ". Esperando...";
-                slotA.style.color = '#7b7b94';
-                slotA.style.background = 'rgba(0,0,0,0.4)';
-                slotA.style.border = 'none';
-                
-                let slotR = document.getElementById('sala-rojo-'+i);
-                slotR.innerText = i + ". Esperando...";
-                slotR.style.color = '#7b7b94';
-                slotR.style.background = 'rgba(0,0,0,0.4)';
-                slotR.style.border = 'none';
-            }
-
-            // 2. Acomodamos a los jugadores reales según el equipo
-            let contadorAzul = 1;
-            let contadorRojo = 1;
-
-            for (let id in jugadores) {
-                let jugador = jugadores[id];
-                let esMiJugador = (id === socket.id);
-                let textoNombre = jugador.nombre + (esMiJugador ? " (Tú)" : "");
-
-                if (jugador.equipo === 1 && contadorAzul <= 3) {
-                    let slot = document.getElementById('sala-azul-' + contadorAzul);
-                    slot.innerText = contadorAzul + ". " + textoNombre;
-                    slot.style.color = '#fff';
-                    slot.style.background = esMiJugador ? 'rgba(0, 229, 255, 0.2)' : 'rgba(255, 255, 255, 0.1)';
-                    if(esMiJugador) slot.style.border = '1px solid #00e5ff';
-                    contadorAzul++;
-                } 
-                else if (jugador.equipo === 2 && contadorRojo <= 3) {
-                    let slot = document.getElementById('sala-rojo-' + contadorRojo);
-                    slot.innerText = contadorRojo + ". " + textoNombre;
-                    slot.style.color = '#fff';
-                    slot.style.background = esMiJugador ? 'rgba(255, 51, 51, 0.2)' : 'rgba(255, 255, 255, 0.1)';
-                    if(esMiJugador) slot.style.border = '1px solid #ff3333';
-                    contadorRojo++;
-                }
-            }
-            
-            // Actualizamos el numerito del botón morado
-            let totalJugadores = Object.keys(jugadores).length;
-            document.getElementById('btn-open-sala').innerText = `📡 VER SALA DE ESPERA (${totalJugadores}/6)`;
-        });
-
-        socket.on('iniciar_juego_todos', () => {
-            window.iniciarPartidaOficial(); 
-        });
-
-        // === NUEVOS RECEPTORES MULTIJUGADOR (BATALLA) ===
-        socket.on('tick_servidor', (jugadoresNube) => {
-            if(typeof window.STATE !== 'undefined' && window.STATE.screen === 'playing') {
-                window.STATE.jugadoresNube = jugadoresNube;
-                window.STATE.miSocketId = socket.id; // Para que el juego sepa cuál soy yo y no me duplique
-            }
-        });
-
-        socket.on('bala_enemiga', (b) => {
-            if(typeof window.STATE !== 'undefined' && window.STATE.screen === 'playing') {
-                // Atrapamos la bala de otro jugador y la pintamos en nuestra pantalla
-                window.STATE.bullets.push({
-                    id: ++window.STATE.bulletIdCounter, 
-                    type: b.type || 'normal',
-                    x: b.x, y: b.y, angle: b.angle,
-                    life: b.life, speed: b.speed, size: b.size, damage: b.damage, 
-                    team: b.team, attacker: { isPlayer: false, team: b.team, id: 'nube' }, 
-                    color: b.color 
-                });
-            }
-        });
-    </script>
-    <!-- ============================== -->
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>     
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    
     <script src="personajes.js"></script>     
     <script src="mapa.js"></script>     
     <script src="mecanicas.js"></script>     
@@ -702,8 +622,8 @@
         window.seleccionarBando = function(equipo) {
             window.seleccionActual.bando = equipo;
             
-            if(typeof socket !== 'undefined') {
-                socket.emit('cambiar_equipo', equipo);
+            if(window.socket) {
+                window.socket.emit('cambiar_equipo', equipo);
             }
 
             let btnBlue = document.getElementById('btn-team-blue');
@@ -729,6 +649,63 @@
             if(typeof Game !== 'undefined' && Game.initMatch) {
                 Game.selectedTeam = window.seleccionActual.bando; 
                 Game.initMatch(claseElegida);
+            }
+        };
+
+        // Lógica de Pintado del Lobby Multijugador
+        UI.actualizarSalaEspera = function(jugadores) {
+            for(let i=1; i<=3; i++) {
+                let slotA = document.getElementById('sala-azul-'+i);
+                if(slotA) {
+                    slotA.innerText = i + ". Esperando...";
+                    slotA.style.color = '#7b7b94';
+                    slotA.style.background = 'rgba(0,0,0,0.4)';
+                    slotA.style.border = 'none';
+                }
+                let slotR = document.getElementById('sala-rojo-'+i);
+                if(slotR) {
+                    slotR.innerText = i + ". Esperando...";
+                    slotR.style.color = '#7b7b94';
+                    slotR.style.background = 'rgba(0,0,0,0.4)';
+                    slotR.style.border = 'none';
+                }
+            }
+
+            let contadorAzul = 1;
+            let contadorRojo = 1;
+            let miId = (window.socket && window.socket.id) ? window.socket.id : null;
+
+            for (let id in jugadores) {
+                let jugador = jugadores[id];
+                let esMiJugador = (id === miId);
+                let textoNombre = (jugador.nombre || "Jugador") + (esMiJugador ? " (Tú)" : "");
+
+                if (jugador.equipo === 1 && contadorAzul <= 3) {
+                    let slot = document.getElementById('sala-azul-' + contadorAzul);
+                    if(slot) {
+                        slot.innerText = contadorAzul + ". " + textoNombre;
+                        slot.style.color = '#fff';
+                        slot.style.background = esMiJugador ? 'rgba(0, 229, 255, 0.2)' : 'rgba(255, 255, 255, 0.1)';
+                        if(esMiJugador) slot.style.border = '1px solid #00e5ff';
+                    }
+                    contadorAzul++;
+                } 
+                else if (jugador.equipo === 2 && contadorRojo <= 3) {
+                    let slot = document.getElementById('sala-rojo-' + contadorRojo);
+                    if(slot) {
+                        slot.innerText = contadorRojo + ". " + textoNombre;
+                        slot.style.color = '#fff';
+                        slot.style.background = esMiJugador ? 'rgba(255, 51, 51, 0.2)' : 'rgba(255, 255, 255, 0.1)';
+                        if(esMiJugador) slot.style.border = '1px solid #ff3333';
+                    }
+                    contadorRojo++;
+                }
+            }
+            
+            let btnSala = document.getElementById('btn-open-sala');
+            if(btnSala) {
+                let totalJugadores = Object.keys(jugadores).length;
+                btnSala.innerText = `📡 VER SALA DE ESPERA (${totalJugadores}/6)`;
             }
         };
 
